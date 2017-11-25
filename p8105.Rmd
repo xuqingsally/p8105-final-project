@@ -1,0 +1,82 @@
+---
+title: "p8105"
+author: "Qing Xu"
+date: "November 21, 2017"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+library(tidyverse)
+library(haven)
+library(readxl)
+library(janitor)
+library(ggmap)
+library(plotly)
+nyc_jobs<- read.csv("NYC_Jobs.csv") %>%
+  clean_names() %>%
+  filter(job_category!= " ", 
+         full_time_part_time_indicator!=" ", 
+         preferred_skills!= " ") %>%
+  head(2500) #google map limited to 2500
+nyc_jobs$work_location<-as.character(nyc_jobs$work_location)
+nyc_jobs$salary_range_from<- as.numeric(nyc_jobs$salary_range_from)
+nyc_jobs$salary_range_to<- as.numeric(nyc_jobs$salary_range_to)
+
+# get lon and lat
+geo <- geocode(location = nyc_jobs$work_location, output="latlon", source="google")
+nyc_jobs<- nyc_jobs %>%
+  mutate(lon = geo$lon, lat = geo$lat) %>%
+  group_by(job_category)
+  mutate(salary_mean = (salary_range_to-salary_range_from)/2+salary_range_from)
+
+```
+
+
+```{r}
+# plotly worldwild
+Sys.setenv('MAPBOX_TOKEN' = 'pk.eyJ1IjoieHVxaW5nc2FsbHkiLCJhIjoiY2phZWh0djdyMHUzZTJ3bGR3MHFsdmIzZSJ9.vhYtu7zeAAuX6slhdDj6lA')
+
+p <- nyc_jobs %>%
+  plot_mapbox(lat = ~lat, lon = ~lon,
+              size=2,
+              #split = ~full_time_part_time_indicator,
+              mode = 'scattermapbox') %>%
+  add_markers(
+    text = ~paste(nyc_jobs$salary_mean), sep = "<br />",
+    color = ~salary_mean,size = I(8)) %>%
+  layout(title = 'Work Location',
+         font = list(color='white'),
+         plot_bgcolor = '#191A1A', paper_bgcolor = '#191A1A',
+         mapbox = list(style = 'dark'),
+         legend = list(orientation = 'h',
+                       font = list(size = 8)),
+         margin = list(l = 25, r = 25,
+                       b = 25, t = 25,
+                       pad = 2))
+p
+```
+
+```{r} 
+#alternative
+#For location in NYC(2500-611)
+myLocation_nyc = c(-74.23,40.58,-73.75,40.87)
+myMap_nyc <- get_map(location=myLocation_nyc,
+                 source = "stamen",maptype = "watercolor", crop = FALSE) 
+ggmap(myMap_nyc)+
+    geom_point(aes(x = lon, y = lat), data = nyc_jobs,
+      alpha = .5, color="darkred",size = 3) +
+    labs(title = "Work location in NYC")
+
+#plotly without map
+nyc_jobs 
+  filter(lon<73.75, lon<74.23,lat<40.87, lat>40.58) %>%
+  mutate(text_label = str_c("mean salary: $", salary_mean)) %>%
+  plot_ly(x = ~lon, y = ~lat, type = "scatter", mode = "markers",
+          alpha = 0.5, 
+          color = ~salary_mean,
+          text = ~text_label) %>%
+  labs(title = "Work location in NYC")
+```
+
