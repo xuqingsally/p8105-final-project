@@ -14,22 +14,58 @@ library(readxl)
 library(janitor)
 library(ggmap)
 library(plotly)
+library(stringr)
+```
+#clean data
+```{r}
 nyc_jobs<- read.csv("NYC_Jobs.csv") %>%
   clean_names() %>%
   filter(job_category!= " ", 
          full_time_part_time_indicator!=" ", 
-         preferred_skills!= " ") %>%
+         preferred_skills!= " ",
+         work_location!=" ") %>%
   head(2500) #google map limited to 2500
-nyc_jobs$work_location<-as.character(nyc_jobs$work_location)
+nyc_jobs$job_category<- as.character(nyc_jobs$job_category)
+
+#combine job category (function?)
+for (i in seq_along(nyc_jobs)) {
+    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("engineering", ignore_case = TRUE))] <- "Engineering"
+    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("finance", ignore_case = TRUE))] <- "Finance"
+    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("legal", ignore_case = TRUE))] <- "Legal Affairs"
+    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("technology", ignore_case = TRUE))] <- "Technology"
+    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("policy", ignore_case = TRUE))] <- "Policy"
+    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("communi", ignore_case = TRUE))] <- "Community"
+    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("clerical", ignore_case = TRUE))] <- "Clerical"
+    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("social service", ignore_case = TRUE))] <- "Social service"
+    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("public safety", ignore_case = TRUE))] <- "Public safety"
+    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("administration", ignore_case = TRUE))] <- "Administration"
+    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("operations", ignore_case = TRUE))] <- "Maintance"
+    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("maintenance ", ignore_case = TRUE))] <- "Maintance"
+    
+}
+
+
+# change unit of salary and calculate mean
+nyc_jobs$salary_frequency<-as.character((nyc_jobs$salary_frequency))
 nyc_jobs$salary_range_from<- as.numeric(nyc_jobs$salary_range_from)
 nyc_jobs$salary_range_to<- as.numeric(nyc_jobs$salary_range_to)
 
+#function?
+nyc_jobs$salary_range_from <- with(nyc_jobs, ifelse(salary_frequency == "Hourly", salary_range_from*1825,salary_range_from))
+nyc_jobs$salary_range_to <- with(nyc_jobs, ifelse(salary_frequency == "Hourly", salary_range_to*1825,salary_range_to))
+nyc_jobs$salary_range_from <- with(nyc_jobs, ifelse(salary_frequency == "Daily", salary_range_from*365*5/7,salary_range_from))
+nyc_jobs$salary_range_to <- with(nyc_jobs, ifelse(salary_frequency == "Daily", salary_range_to*365*5/7,salary_range_to))
+
+nyc_jobs<-mutate(nyc_jobs,salary_frequency="Annual") %>%
+          mutate(salary_mean = (salary_range_to-salary_range_from)/2+salary_range_from)
+
+
 # get lon and lat
+nyc_jobs$work_location<-as.character(nyc_jobs$work_location)
 geo <- geocode(location = nyc_jobs$work_location, output="latlon", source="google")
 nyc_jobs<- nyc_jobs %>%
   mutate(lon = geo$lon, lat = geo$lat) %>%
   group_by(job_category)
-  mutate(salary_mean = (salary_range_to-salary_range_from)/2+salary_range_from)
 
 ```
 
@@ -79,4 +115,3 @@ nyc_jobs
           text = ~text_label) %>%
   labs(title = "Work location in NYC")
 ```
-
