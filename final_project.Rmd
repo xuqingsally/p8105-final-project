@@ -11,7 +11,12 @@ Anything that inspired you, such as a paper, a web site, or something we discuss
 #Initial questions:
 What questions are you trying to answer? How did these questions evolve over the course of the project? What new questions did you consider in the course of your analysis?
 #Data: 
-Source, scraping method, cleaning, etc.
+Source: https://data.cityofnewyork.us/City-Government/NYC-Jobs/kpav-sd4t/data
+Scrape:We doWnloaded the data set from the website and the original data set contains 3174 job information. We selected data with information about work location, job category, preferred skills and full/part time. We want to use Google Map to get longtitute and latitute from work locations. Since the Google map has a limit of 2500 observation one time, we selected first 2500 observations from the data set.
+Cleaning:
+1. Merged job category if they are the same kind but just have different names. Finally we got 12 kinds of job categories.  
+2. Unified salary unit to "Annual" and recalculated the salary range and average salary.  
+
 #Exploratory analysis: 
 Visualizations, summaries, and exploratory statistical analyses. Justify the steps you took, and show any major changes to your ideas.
 #Additional analysis:

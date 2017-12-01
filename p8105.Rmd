@@ -28,7 +28,7 @@ nyc_jobs<- read.csv("NYC_Jobs.csv") %>%
 nyc_jobs$job_category<- as.character(nyc_jobs$job_category)
 
 #combine job category (function?)
-for (i in seq_along(nyc_jobs)) {
+for (i in 1:2500) {
     nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("engineering", ignore_case = TRUE))] <- "Engineering"
     nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("finance", ignore_case = TRUE))] <- "Finance"
     nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("legal", ignore_case = TRUE))] <- "Legal Affairs"
