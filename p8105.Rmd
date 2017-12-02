@@ -75,13 +75,14 @@ nyc_jobs<- nyc_jobs %>%
 Sys.setenv('MAPBOX_TOKEN' = 'pk.eyJ1IjoieHVxaW5nc2FsbHkiLCJhIjoiY2phZWh0djdyMHUzZTJ3bGR3MHFsdmIzZSJ9.vhYtu7zeAAuX6slhdDj6lA')
 
 p <- nyc_jobs %>%
+  mutate(text_label = str_c("Annual mean salary$:",salary_mean)) %>% 
   plot_mapbox(lat = ~lat, lon = ~lon,
               size=2,
-              #split = ~full_time_part_time_indicator,
+              split = nyc_jobs$job_category,
               mode = 'scattermapbox') %>%
   add_markers(
-    text = ~paste(nyc_jobs$salary_mean), sep = "<br />",
-    color = ~salary_mean,size = I(8)) %>%
+    text = ~text_label,
+    color = ~job_category,size = I(9)) %>%
   layout(title = 'Work Location',
          font = list(color='white'),
          plot_bgcolor = '#191A1A', paper_bgcolor = '#191A1A',
@@ -95,7 +96,7 @@ p
 ```
 
 ```{r} 
-#alternative
+#alternative map
 #For location in NYC(2500-611)
 myLocation_nyc = c(-74.23,40.58,-73.75,40.87)
 myMap_nyc <- get_map(location=myLocation_nyc,
@@ -105,13 +106,12 @@ ggmap(myMap_nyc)+
       alpha = .5, color="darkred",size = 3) +
     labs(title = "Work location in NYC")
 
-#plotly without map
-nyc_jobs 
-  filter(lon<73.75, lon<74.23,lat<40.87, lat>40.58) %>%
-  mutate(text_label = str_c("mean salary: $", salary_mean)) %>%
-  plot_ly(x = ~lon, y = ~lat, type = "scatter", mode = "markers",
-          alpha = 0.5, 
-          color = ~salary_mean,
-          text = ~text_label) %>%
-  labs(title = "Work location in NYC")
+```
+
+# Boxplot of salary in different job category
+```{r}
+nyc_jobs %>%
+plot_ly(y = ~salary_mean, color = ~job_category, type = "box",
+          colors = "Set2") %>%
+layout(title = "Annual average salary distribution in 12 job categories")
 ```
