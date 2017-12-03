@@ -115,3 +115,22 @@ plot_ly(y = ~salary_mean, color = ~job_category, type = "box",
           colors = "Set2") %>%
 layout(title = "Annual average salary distribution in 12 job categories")
 ```
+# job type and educational requirement and salary
+```{r}
+job_data=nyc_jobs%>%
+select(job_category, salary_range_from, salary_range_to,minimum_qual_requirements)%>%
+  filter(job_category!= " ", minimum_qual_requirements!=" ")
+
+master_data=filter(job_data,grepl("master's degree",minimum_qual_requirements),!grepl("baccalaureate",minimum_qual_requirements),!grepl("Baccalaureate",minimum_qual_requirements))
+
+baccalaureate_data = filter(job_data,grepl(" baccalaureate ",minimum_qual_requirements),!grepl("Master's degree",minimum_qual_requirements), !grepl("master's degree",minimum_qual_requirements))
+
+Other_data=filter(job_data,!grepl(" baccalaureate ",minimum_qual_requirements),!grepl("Master's degree",minimum_qual_requirements), !grepl("master's degree",minimum_qual_requirements), !grepl("Baccalaureate",minimum_qual_requirements))
+  
+
+
+
+
+
+ 
+```
