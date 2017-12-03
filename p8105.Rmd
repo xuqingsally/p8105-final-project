@@ -15,6 +15,11 @@ library(janitor)
 library(ggmap)
 library(plotly)
 library(stringr)
+library(wordcloud2)
+library(tidytext)
+library(forcats)
+library(viridis)
+library(ggplot2)
 ```
 #clean data
 ```{r}
@@ -115,6 +120,7 @@ plot_ly(y = ~salary_mean, color = ~job_category, type = "box",
           colors = "Set2") %>%
 layout(title = "Annual average salary distribution in 12 job categories")
 ```
+<<<<<<< HEAD
 # Job types with different educational requirement and base salary
 ```{r}
 job_data=nyc_jobs%>%
@@ -153,3 +159,79 @@ job_data=mutate(job_data, salary_range=salary_range_to-salary_range_from)
 plot_ly(job_data, y=~salary_range, x= ~job_category, type="bar")%>%
   layout(title = "The wage increasing ranges of different kinds of jobs")
 ```
+
+
+## Table of positions, agency and job category. 
+
+```{r}
+job_positions = nyc_jobs %>%
+  select(x_of_positions, agency, job_category, salary_mean) %>%
+  distinct() %>%
+  group_by(agency, job_category) %>%
+  summarise(positions = sum(x_of_positions)) %>%
+  arrange(desc(positions))
+
+# Number of job positions: top 10
+knitr::kable(head(job_positions, 10))
+```
+
+The table above shows the top-10 number of job positions in NYC from 2011 to 2017. `r job_positions[[1]][1]` with job category "Health" has the most job positions.
+
+## Bar plot of job category vs. number of positions of each year.
+
+```{r}
+positions_plot = nyc_jobs %>%
+  select(x_of_positions, agency, job_category, salary_mean, posting_date) %>%
+  distinct() %>%
+  separate(posting_date, into = c("year", "month", "day"), sep = "-") %>%
+  select(-month, -day) %>%
+  group_by(job_category, year) %>%
+  summarise(positions = sum(x_of_positions))
+
+plot_ly(positions_plot, x = ~job_category, y = ~positions,
+        color = ~year, type = "bar") %>%
+  layout(title = "Number of positions of job categories in each year",
+         barmode = "group")
+```
+
+The bar chart above shows the number of positions for each job category in each year. From 2013 to 2017, the number of job positions in each category keeps increasing. And all categories have a dramatically increase in job positions in 2017. This might because more and more companies were founded and developed in 2017, thus they need more employees joining in. Besides, since this dataset contains all job information from NYC official job website, as the year increases, more people found this website and created job postings on this site.
+
+
+
+#wordcount
+```{r}
+nyc_jobs = nyc_jobs%>% 
+  ungroup()%>%
+  mutate(  minimum_qual_requirements = as.character(minimum_qual_requirements))%>%
+  mutate(preferred_skills = as.character(preferred_skills))
+ 
+jobs_words_skill =  nyc_jobs%>%
+  unnest_tokens(word,preferred_skills)%>%
+  anti_join(stop_words)%>%
+  inner_join(., parts_of_speech) %>%
+  count(word, sort = TRUE)
+jobs_words_requirement =  nyc_jobs%>%
+    unnest_tokens(word,minimum_qual_requirements)%>%
+    anti_join(stop_words)%>%
+    inner_join(., parts_of_speech) %>%
+    count(word, sort = TRUE)
+  
+jobs_words_skill %>% 
+   top_n(20) %>% 
+   mutate(word = fct_reorder(word, n)) %>% 
+   plot_ly(y = ~word, x = ~n, color = ~word, type = "bar")
+  
+jobs_words_requirement %>% 
+    top_n(20) %>% 
+    mutate(word = fct_reorder(word, n)) %>% 
+    plot_ly(y = ~word, x = ~n, color = ~word, type = "bar")
+  
+set.seed(123)
+wordcloud2(jobs_words_skill, size = 2,color = 'random-light',  
+           backgroundColor = "gray", fontWeight='bold',  
+           minRotation = -pi/3, maxRotation = pi/3,rotateRatio = 0.8)  
+wordcloud2(jobs_words_requirement, size = 2,color = 'random-light',  
+           backgroundColor = "gray", fontWeight='bold',  
+           minRotation = -pi/3, maxRotation = pi/3,rotateRatio = 0.8)  
+```
+
