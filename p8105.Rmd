@@ -15,6 +15,10 @@ library(janitor)
 library(ggmap)
 library(plotly)
 library(stringr)
+library(wordcloud2)
+library(tidytext)
+library(forcats)
+library(viridis)
 ```
 #clean data
 ```{r}
@@ -114,4 +118,40 @@ nyc_jobs %>%
 plot_ly(y = ~salary_mean, color = ~job_category, type = "box",
           colors = "Set2") %>%
 layout(title = "Annual average salary distribution in 12 job categories")
+```
+
+#wordcount
+```{r}
+nyc_jobs = nyc_jobs%>% 
+  mutate(  minimum_qual_requirements = as.character(minimum_qual_requirements))%>%
+  mutate(preferred_skills = as.character(preferred_skills))
+ 
+jobs_words_skill =  nyc_jobs%>%
+  unnest_tokens(word,preferred_skills)%>%
+  anti_join(stop_words)%>%
+  filter(word!=1,word!=2,word!=3, word!="芒", word!="鈧",word!="劉")%>%
+  count(word, sort = TRUE)
+jobs_words_requirement =  nyc_jobs%>%
+    unnest_tokens(word,minimum_qual_requirements)%>%
+    anti_join(stop_words)%>%
+    filter(word!=1,word!=2,word!=3, word!="芒", word!="鈧",word!="劉")%>%
+    count(word, sort = TRUE)
+  
+jobs_words_skill %>% 
+   top_n(20) %>% 
+   mutate(word = fct_reorder(word, n)) %>% 
+   plot_ly(y = ~word, x = ~n, color = ~word, type = "bar")
+  
+jobs_words_requirement %>% 
+    top_n(20) %>% 
+    mutate(word = fct_reorder(word, n)) %>% 
+    plot_ly(y = ~word, x = ~n, color = ~word, type = "bar")
+  
+set.seed(123)
+wordcloud2(jobs_words_skill, size = 2,color = 'random-light',  
+           backgroundColor = "gray", fontWeight='bold',  
+           minRotation = -pi/3, maxRotation = pi/3,rotateRatio = 0.8)  
+wordcloud2(jobs_words_requirement, size = 2,color = 'random-light',  
+           backgroundColor = "gray", fontWeight='bold',  
+           minRotation = -pi/3, maxRotation = pi/3,rotateRatio = 0.8)  
 ```
