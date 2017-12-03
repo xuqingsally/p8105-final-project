@@ -161,6 +161,7 @@ The bar chart above shows the number of positions for each job category in each 
 #wordcount
 ```{r}
 nyc_jobs = nyc_jobs%>% 
+  ungroup()%>%
   mutate(  minimum_qual_requirements = as.character(minimum_qual_requirements))%>%
   mutate(preferred_skills = as.character(preferred_skills))
  
