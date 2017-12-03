@@ -19,6 +19,7 @@ library(wordcloud2)
 library(tidytext)
 library(forcats)
 library(viridis)
+library(ggplot2)
 ```
 #clean data
 ```{r}
@@ -119,6 +120,43 @@ plot_ly(y = ~salary_mean, color = ~job_category, type = "box",
           colors = "Set2") %>%
 layout(title = "Annual average salary distribution in 12 job categories")
 ```
+
+## Table of positions, agency and job category. 
+
+```{r}
+job_positions = nyc_jobs %>%
+  select(x_of_positions, agency, job_category, salary_mean) %>%
+  distinct() %>%
+  group_by(agency, job_category) %>%
+  summarise(positions = sum(x_of_positions)) %>%
+  arrange(desc(positions))
+
+# Number of job positions: top 10
+knitr::kable(head(job_positions, 10))
+```
+
+The table above shows the top-10 number of job positions in NYC from 2011 to 2017. `r job_positions[[1]][1]` with job category "Health" has the most job positions.
+
+## Bar plot of job category vs. number of positions of each year.
+
+```{r}
+positions_plot = nyc_jobs %>%
+  select(x_of_positions, agency, job_category, salary_mean, posting_date) %>%
+  distinct() %>%
+  separate(posting_date, into = c("year", "month", "day"), sep = "-") %>%
+  select(-month, -day) %>%
+  group_by(job_category, year) %>%
+  summarise(positions = sum(x_of_positions))
+
+plot_ly(positions_plot, x = ~job_category, y = ~positions,
+        color = ~year, type = "bar") %>%
+  layout(title = "Number of positions of job categories in each year",
+         barmode = "group")
+```
+
+The bar chart above shows the number of positions for each job category in each year. From 2013 to 2017, the number of job positions in each category keeps increasing. And all categories have a dramatically increase in job positions in 2017. This might because more and more companies were founded and developed in 2017, thus they need more employees joining in. Besides, since this dataset contains all job information from NYC official job website, as the year increases, more people found this website and created job postings on this site.
+
+
 
 #wordcount
 ```{r}
