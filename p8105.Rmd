@@ -167,12 +167,12 @@ nyc_jobs = nyc_jobs%>%
 jobs_words_skill =  nyc_jobs%>%
   unnest_tokens(word,preferred_skills)%>%
   anti_join(stop_words)%>%
-  filter(word!=1,word!=2,word!=3, word!="芒", word!="鈧",word!="劉")%>%
+  inner_join(., parts_of_speech) %>%
   count(word, sort = TRUE)
 jobs_words_requirement =  nyc_jobs%>%
     unnest_tokens(word,minimum_qual_requirements)%>%
     anti_join(stop_words)%>%
-    filter(word!=1,word!=2,word!=3, word!="芒", word!="鈧",word!="劉")%>%
+    inner_join(., parts_of_speech) %>%
     count(word, sort = TRUE)
   
 jobs_words_skill %>% 
