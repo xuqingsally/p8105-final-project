@@ -145,12 +145,11 @@ Other_plot=plot_ly(Other_data, y = ~salary_range_from, color = ~job_category, ty
           colors = "Set2")%>%
   layout(title = "Base salary of different kind of jobs without requirement of degree")
 
-subplot(master_plot,baccalaureate_plot,Other_plot)
 ```
 #The wage increasing ranges of different jobs
 ```{r}
 job_data=mutate(job_data, salary_range=salary_range_to-salary_range_from)
 
-plot_ly(job_data, y=~salary_range, x= ~job_category, type="")
-
+plot_ly(job_data, y=~salary_range, x= ~job_category, type="bar")%>%
+  layout(title = "The wage increasing ranges of different kinds of jobs")
 ```
