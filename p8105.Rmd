@@ -26,7 +26,7 @@ Cleaning:
 2. Unified salary unit to "Annual" and recalculated the salary range and average salary.   
 3. Used Google Map to change location to longitute and latitute.   
   
-```{r,warning=FALSE,echo=FALSE}
+```{r,warning=FALSE,echo=FALSE,message=FALSE}
 library(tidyverse)
 library(haven)
 library(readxl)
@@ -41,7 +41,7 @@ library(viridis)
 ```
 
 
-```{r,warning=FALSE,echo=FALSE,message=FALSE}
+```{r,warning=FALSE,echo=FALSE}
 #clean data
 nyc_jobs<- read.csv("NYC_Jobs.csv") %>%
   clean_names() %>%
@@ -74,8 +74,6 @@ for (i in 1:2500) {
 nyc_jobs$salary_frequency<-as.character((nyc_jobs$salary_frequency))
 nyc_jobs$salary_range_from<- as.numeric(nyc_jobs$salary_range_from)
 nyc_jobs$salary_range_to<- as.numeric(nyc_jobs$salary_range_to)
-
-#function?
 nyc_jobs$salary_range_from <- with(nyc_jobs, ifelse(salary_frequency == "Hourly", salary_range_from*1825,salary_range_from))
 nyc_jobs$salary_range_to <- with(nyc_jobs, ifelse(salary_frequency == "Hourly", salary_range_to*1825,salary_range_to))
 nyc_jobs$salary_range_from <- with(nyc_jobs, ifelse(salary_frequency == "Daily", salary_range_from*365*5/7,salary_range_from))
@@ -97,7 +95,7 @@ nyc_jobs<- nyc_jobs %>%
 
 ##location map
 First, we use longtitue and latitute of 2500 observations and plot their location in the map by different job category and text with average annual salary.  
-```{r,warning=FALSE}
+```{r,message=FALSE,warning=FALSE}
 # plotly worldwild
 Sys.setenv('MAPBOX_TOKEN' = 'pk.eyJ1IjoieHVxaW5nc2FsbHkiLCJhIjoiY2phZWh0djdyMHUzZTJ3bGR3MHFsdmIzZSJ9.vhYtu7zeAAuX6slhdDj6lA')
 
@@ -121,7 +119,7 @@ plot_mapbox(p,lat = ~lat, lon = ~lon,
                        b = 25, t = 25,
                        pad = 2))
 ```
-Although the data set is the information of NY, there are some work locations outside NY.  
+Although the data set is about the job information of NY, there are some work locations outside NY.  
 
 # Boxplot of salary in different job category
 We draw the distribution of average annual salary of different job categories.
@@ -248,7 +246,8 @@ wordcloud2(jobs_words_requirement, size = 2,color = 'random-light',
 ```
 
 #Additional analysis:
-If you undertake formal statistical analyses, describe these in detail
+If you undertake formal statistical analyses, describe these in detail  
+
 #Discussion: 
 What were your findings? Are they what you expect? What insights into the data can you make?
 
