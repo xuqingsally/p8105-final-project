@@ -1,13 +1,32 @@
 ---
-title: "p8105"
-author: "Qing Xu"
+title: "Find a proper job in NYC -- Job analysis of NYC"
+author: "p8105 Goup 13"
 date: "November 21, 2017"
 output: html_document
 editor_options: 
   chunk_output_type: console
 ---
+#Member:
+Huilin Zhou (hz2507)  
+Zhuo Li (zl2637)  
+Qing Xu (qx2178)  
+Zhaoyu Liu (zl2638)  
 
-```{r}
+#Motivation: 
+Many of us will find a job in recent years. In New York City, what type of job can be payed for higher salary? If that's the ideal job for me , what skills should I have before applying for it?  Also where should I rent an apartment if I want to live close to that type of positions? By looking at the NYC jobs data set from 2013 to 2017,we wish to give some advice on job catrgory, required skills and salary for people who are seeking for a job.  
+
+#Initial questions:
+What questions are you trying to answer? How did these questions evolve over the course of the project? What new questions did you consider in the course of your analysis?
+
+#Data: 
+Source: https://data.cityofnewyork.us/City-Government/NYC-Jobs/kpav-sd4t/data  
+Scrape:We doWnloaded the data set from the website and the original data set contains 3174 job information. We selected data with information about work location, job category, preferred skills and full/part time. We want to use Google Map to get longtitute and latitute from work locations. Since the Google map has a limit of 2500 observation one time, we selected first 2500 observations from the data set.  
+Cleaning:  
+1. Merged job category if they are the same kind but just have different names. Finally we got 12 kinds of job categories.    
+2. Unified salary unit to "Annual" and recalculated the salary range and average salary.   
+3. Used Google Map to change location to longitute and latitute.   
+  
+```{r,warning=FALSE,echo=FALSE}
 library(tidyverse)
 library(haven)
 library(readxl)
@@ -19,12 +38,11 @@ library(wordcloud2)
 library(tidytext)
 library(forcats)
 library(viridis)
-library(ggplot2)
 ```
 
-# Clean data
 
-```{r}
+```{r,warning=FALSE,echo=FALSE,message=FALSE}
+#clean data
 nyc_jobs<- read.csv("NYC_Jobs.csv") %>%
   clean_names() %>%
   filter(job_category!= " ", 
@@ -75,21 +93,24 @@ nyc_jobs<- nyc_jobs %>%
   group_by(job_category)
 
 ```
+#Exploratory analysis: 
 
-
-```{r}
+##location map
+First, we use longtitue and latitute of 2500 observations and plot their location in the map by different job category and text with average annual salary.  
+```{r,warning=FALSE}
 # plotly worldwild
 Sys.setenv('MAPBOX_TOKEN' = 'pk.eyJ1IjoieHVxaW5nc2FsbHkiLCJhIjoiY2phZWh0djdyMHUzZTJ3bGR3MHFsdmIzZSJ9.vhYtu7zeAAuX6slhdDj6lA')
 
 p <- nyc_jobs %>%
-  mutate(text_label = str_c("Annual mean salary$:",salary_mean)) %>% 
-  plot_mapbox(lat = ~lat, lon = ~lon,
+  mutate(text_label = str_c("Annual mean salary$:",salary_mean))
+
+plot_mapbox(p,lat = ~lat, lon = ~lon,
               size=2,
               split = nyc_jobs$job_category,
               mode = 'scattermapbox') %>%
   add_markers(
     text = ~text_label,
-    color = ~job_category,size = I(9)) %>%
+    color = ~job_category,size = I(8)) %>%
   layout(title = 'Work Location',
          font = list(color='white'),
          plot_bgcolor = '#191A1A', paper_bgcolor = '#191A1A',
@@ -99,34 +120,22 @@ p <- nyc_jobs %>%
          margin = list(l = 25, r = 25,
                        b = 25, t = 25,
                        pad = 2))
-p
 ```
-
-```{r} 
-#alternative map
-#For location in NYC(2500-611)
-myLocation_nyc = c(-74.23,40.58,-73.75,40.87)
-myMap_nyc <- get_map(location=myLocation_nyc,
-                 source = "stamen",maptype = "watercolor", crop = FALSE) 
-ggmap(myMap_nyc)+
-    geom_point(aes(x = lon, y = lat), data = nyc_jobs,
-      alpha = .5, color="darkred",size = 3) +
-    labs(title = "Work location in NYC")
-
-```
+Although the data set is the information of NY, there are some work locations outside NY.  
 
 # Boxplot of salary in different job category
-
-```{r}
-nyc_jobs %>%
-plot_ly(y = ~salary_mean, color = ~job_category, type = "box",
+We draw the distribution of average annual salary of different job categories.
+```{r,warning=FALSE}
+plot_ly(nyc_jobs,y = ~salary_mean, color = ~job_category, type = "box",
           colors = "Set2") %>%
 layout(title = "Annual average salary distribution in 12 job categories")
 ```
+We found that Technology and Engineering have high salary in as a Whole and Clerical jobs have lowest salary. It makes sense that most of technology and engineering work need advanced skills and knowledge which deserve great pay.  
+Also in many areas, there are some outliers that have extreme high salary. So the amount of salary also depends on person that you can get far beyound average salary if you do well in your position. 
 
 # Job types with different educational requirement and base salary
 
-```{r}
+```{r,warning=FALSE,message=FALSE}
 job_data=nyc_jobs%>%
 select(job_category, salary_range_from, salary_range_to,minimum_qual_requirements,full_time_part_time_indicator,salary_frequency)%>%
 filter(job_category!= " ", minimum_qual_requirements!=" ",full_time_part_time_indicator=="F",salary_frequency=="Annual")
@@ -143,14 +152,14 @@ Other_data=filter(job_data,!grepl(paste(y, collapse = "|"),minimum_qual_requirem
 
 # Boxplots of salary for different educational requirement.
 
-```{r}
-master_plot=plot_ly(master_data, y = ~salary_range_from, color = ~job_category, type = "box", colors = "Set2")%>%
+```{r,warning=FALSE,message=FALSE}
+plot_ly(master_data, y = ~salary_range_from, color = ~job_category, type = "box", colors = "Set2")%>%
 layout(title = "Base salary of  jobs required at least master degree")
 
-baccalaureate_plot=plot_ly(baccalaureate_data, y = ~salary_range_from, color = ~job_category, type = "box", colors = "Set2")%>%
+plot_ly(baccalaureate_data, y = ~salary_range_from, color = ~job_category, type = "box", colors = "Set2")%>%
   layout(title = "Base salary of jobs required at least baccalaureate degree(No need of master's)")
   
-Other_plot=plot_ly(Other_data, y = ~salary_range_from, color = ~job_category, type = "box",
+plot_ly(Other_data, y = ~salary_range_from, color = ~job_category, type = "box",
           colors = "Set2")%>%
   layout(title = "Base salary of different kind of jobs without requirement of degree")
 
@@ -158,7 +167,7 @@ Other_plot=plot_ly(Other_data, y = ~salary_range_from, color = ~job_category, ty
 
 # The wage increasing ranges of different jobs
 
-```{r}
+```{r,warning=FALSE,message=FALSE}
 job_data=mutate(job_data, salary_range=salary_range_to-salary_range_from)
 
 plot_ly(job_data, y=~salary_range, x= ~job_category, type="bar")%>%
@@ -167,7 +176,7 @@ plot_ly(job_data, y=~salary_range, x= ~job_category, type="bar")%>%
 
 # Table of positions, agency and job category. 
 
-```{r}
+```{r,warning=FALSE,message=FALSE}
 job_positions = nyc_jobs %>%
   select(x_of_positions, agency, job_category, salary_mean) %>%
   distinct() %>%
@@ -183,7 +192,7 @@ The table above shows the top-10 number of job positions in NYC from 2013 to 201
 
 # Bar plot of job category vs. number of positions of each year.
 
-```{r}
+```{r,warning=FALSE,message=FALSE}
 positions_plot = nyc_jobs %>%
   select(x_of_positions, agency, job_category, salary_mean, posting_date) %>%
   distinct() %>%
@@ -202,7 +211,7 @@ The bar chart above shows the number of positions for each job category in each 
 
 # Wordcount analysis
 
-```{r}
+```{r,warning=FALSE,message=FALSE}
 nyc_jobs = nyc_jobs%>% 
   ungroup()%>%
   mutate(  minimum_qual_requirements = as.character(minimum_qual_requirements))%>%
@@ -237,4 +246,9 @@ wordcloud2(jobs_words_requirement, size = 2,color = 'random-light',
            backgroundColor = "gray", fontWeight='bold',  
            minRotation = -pi/3, maxRotation = pi/3,rotateRatio = 0.8)  
 ```
+
+#Additional analysis:
+If you undertake formal statistical analyses, describe these in detail
+#Discussion: 
+What were your findings? Are they what you expect? What insights into the data can you make?
 
