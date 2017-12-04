@@ -21,7 +21,9 @@ library(forcats)
 library(viridis)
 library(ggplot2)
 ```
-#clean data
+
+# Clean data
+
 ```{r}
 nyc_jobs<- read.csv("NYC_Jobs.csv") %>%
   clean_names() %>%
@@ -114,32 +116,33 @@ ggmap(myMap_nyc)+
 ```
 
 # Boxplot of salary in different job category
+
 ```{r}
 nyc_jobs %>%
 plot_ly(y = ~salary_mean, color = ~job_category, type = "box",
           colors = "Set2") %>%
 layout(title = "Annual average salary distribution in 12 job categories")
 ```
-<<<<<<< HEAD
+
 # Job types with different educational requirement and base salary
+
 ```{r}
 job_data=nyc_jobs%>%
 select(job_category, salary_range_from, salary_range_to,minimum_qual_requirements,full_time_part_time_indicator,salary_frequency)%>%
 filter(job_category!= " ", minimum_qual_requirements!=" ",full_time_part_time_indicator=="F",salary_frequency=="Annual")
  
-
-
 x=c("baccalaureate", "Bachelor")
 y=c("Master","master")
 
 master_data=filter(job_data,grepl(paste(y, collapse = "|"),minimum_qual_requirements),!grepl(paste(x, collapse = "|"),minimum_qual_requirements))
-  
 
 baccalaureate_data = filter(job_data,grepl(paste(x, collapse = "|"),minimum_qual_requirements),!grepl(paste(y, collapse = "|"),minimum_qual_requirements))
 
 Other_data=filter(job_data,!grepl(paste(y, collapse = "|"),minimum_qual_requirements),!grepl(paste(x, collapse = "|"),minimum_qual_requirements))
 ```
-Boxplots of salary for different educational requirement.
+
+# Boxplots of salary for different educational requirement.
+
 ```{r}
 master_plot=plot_ly(master_data, y = ~salary_range_from, color = ~job_category, type = "box", colors = "Set2")%>%
 layout(title = "Base salary of  jobs required at least master degree")
@@ -152,7 +155,9 @@ Other_plot=plot_ly(Other_data, y = ~salary_range_from, color = ~job_category, ty
   layout(title = "Base salary of different kind of jobs without requirement of degree")
 
 ```
-#The wage increasing ranges of different jobs
+
+# The wage increasing ranges of different jobs
+
 ```{r}
 job_data=mutate(job_data, salary_range=salary_range_to-salary_range_from)
 
@@ -160,8 +165,7 @@ plot_ly(job_data, y=~salary_range, x= ~job_category, type="bar")%>%
   layout(title = "The wage increasing ranges of different kinds of jobs")
 ```
 
-
-## Table of positions, agency and job category. 
+# Table of positions, agency and job category. 
 
 ```{r}
 job_positions = nyc_jobs %>%
@@ -175,9 +179,9 @@ job_positions = nyc_jobs %>%
 knitr::kable(head(job_positions, 10))
 ```
 
-The table above shows the top-10 number of job positions in NYC from 2011 to 2017. `r job_positions[[1]][1]` with job category "Health" has the most job positions.
+The table above shows the top-10 number of job positions in NYC from 2013 to 2017. `r job_positions[[1]][1]` with job category "Health" has the most job positions.
 
-## Bar plot of job category vs. number of positions of each year.
+# Bar plot of job category vs. number of positions of each year.
 
 ```{r}
 positions_plot = nyc_jobs %>%
@@ -196,9 +200,8 @@ plot_ly(positions_plot, x = ~job_category, y = ~positions,
 
 The bar chart above shows the number of positions for each job category in each year. From 2013 to 2017, the number of job positions in each category keeps increasing. And all categories have a dramatically increase in job positions in 2017. This might because more and more companies were founded and developed in 2017, thus they need more employees joining in. Besides, since this dataset contains all job information from NYC official job website, as the year increases, more people found this website and created job postings on this site.
 
+# Wordcount analysis
 
-
-#wordcount
 ```{r}
 nyc_jobs = nyc_jobs%>% 
   ungroup()%>%
