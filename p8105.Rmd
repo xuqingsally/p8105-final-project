@@ -125,7 +125,7 @@ layout(title = "Annual average salary distribution in 12 job categories")
 ```{r echo=False}
 job_data=nyc_jobs %>%
 select(job_category, salary_range_from, salary_range_to,minimum_qual_requirements,full_time_part_time_indicator,salary_frequency) %>%
-filter(job_category!= " ", minimum_qual_requirements!=" ",full_time_part_time_indicator=="F",salary_frequency=="Annual")
+filter(job_category!= " ", minimum_qual_requirements!=" ",full_time_part_time_indicator =="F",salary_frequency=="Annual")
  
 
 x=c("baccalaureate", "Bachelor")
@@ -159,9 +159,9 @@ Comparing those three plots, we can see the overall base salary of jobs required
 
 #The wage increasing ranges of different jobs
 ```{r echo=False}
-job_data=mutate(job_data, salary_range = salary_range_to-salary_range_from)
+job_data=mutate(job_data, salary_range = salary_range_to - salary_range_from)
 
-plot_ly(job_data, y=~salary_range, x= ~job_category, type = "bar") %>%
+plot_ly(job_data, y = ~salary_range,x = ~job_category, type = "bar") %>%
   layout(title = "The wage increasing ranges of different kinds of jobs")
 ```
 
