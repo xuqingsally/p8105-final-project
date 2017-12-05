@@ -209,35 +209,44 @@ plot_ly(positions_plot, x = ~job_category, y = ~positions,
 
 The bar chart above shows the number of positions for each job category in each year. From 2013 to 2017, the number of job positions in each category keeps increasing. And all categories have a dramatically increase in job positions in 2017. This might because more and more companies were founded and developed in 2017, thus they need more employees joining in. Besides, since this dataset contains all job information from NYC official job website, as the year increases, more people found this website and created job postings on this site.
 
-# Wordcount analysis
-
-```{r,warning=FALSE,message=FALSE}
+# Wordcount analysis of Preffered Skills and Minimum Qual Requirements
+```{r}
 nyc_jobs = nyc_jobs%>% 
   ungroup()%>%
   mutate(  minimum_qual_requirements = as.character(minimum_qual_requirements))%>%
   mutate(preferred_skills = as.character(preferred_skills))
- 
+
 jobs_words_skill =  nyc_jobs%>%
   unnest_tokens(word,preferred_skills)%>%
   anti_join(stop_words)%>%
   inner_join(., parts_of_speech) %>%
   count(word, sort = TRUE)
 jobs_words_requirement =  nyc_jobs%>%
-    unnest_tokens(word,minimum_qual_requirements)%>%
-    anti_join(stop_words)%>%
-    inner_join(., parts_of_speech) %>%
-    count(word, sort = TRUE)
-  
+  unnest_tokens(word,minimum_qual_requirements)%>%
+  anti_join(stop_words)%>%
+  inner_join(., parts_of_speech) %>%
+  count(word, sort = TRUE)
+
 jobs_words_skill %>% 
-   top_n(20) %>% 
-   mutate(word = fct_reorder(word, n)) %>% 
-   plot_ly(y = ~word, x = ~n, color = ~word, type = "bar")
-  
+  top_n(20) %>% 
+  mutate(word = fct_reorder(word, n)) %>% 
+  plot_ly(y = ~word, x = ~n, color = ~word, type = "bar")%>%
+  layout(title = "Preferred Skills Word Counts")
+
 jobs_words_requirement %>% 
-    top_n(20) %>% 
-    mutate(word = fct_reorder(word, n)) %>% 
-    plot_ly(y = ~word, x = ~n, color = ~word, type = "bar")
-  
+  top_n(20) %>% 
+  mutate(word = fct_reorder(word, n)) %>% 
+  plot_ly(y = ~word, x = ~n, color = ~word, type = "bar")%>%
+  layout(title = "Minimum Qual Requirements")
+```
+
+The word count plots of prefferred skills and minimum qual requirements. 
+The word count plots of prefferred skills and minimum qual requirements. After deleting meaningless words, experience is the most used word both in prefeered skills and minimum requirement. We could see that word and excel is still the most common skill needed, and other skills for communication like written, verbal public speaking and oral is also like basic skills needed. 
+For miminum qual requirements, education is really important, for that there are several words related to education shown on the plot such like "school", "college", "degree", "education", "graduate". Those words indicates a high requirement of education like bacherlor or master degree. And the word york indicates the requirement of residency in New York. For different knids of job, the skill and minimum requirement may change. The result of this part will be shown on the Shinny Website.
+The word clouds of skills and minimum requirement are shown below, which indicates a more straight view of word frequency.
+
+# Word Cloud of Preffered Skills and Minimum Qual Requirements
+```{r}
 set.seed(123)
 wordcloud2(jobs_words_skill, size = 2,color = 'random-light',  
            backgroundColor = "gray", fontWeight='bold',  
