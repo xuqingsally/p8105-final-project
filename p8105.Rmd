@@ -81,7 +81,9 @@ nyc_jobs$salary_range_to <- with(nyc_jobs, ifelse(salary_frequency == "Daily", s
 
 nyc_jobs<-mutate(nyc_jobs,salary_frequency="Annual") %>%
           mutate(salary_mean = (salary_range_to-salary_range_from)/2+salary_range_from)
+```
 
+```{r,message=FALSE,echo=FALSE,warning=FALSE}
 
 # get lon and lat
 nyc_jobs$work_location<-as.character(nyc_jobs$work_location)
