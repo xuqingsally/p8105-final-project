@@ -2,9 +2,9 @@
 title: "Find a proper job in NYC -- Job analysis of NYC"
 author: "p8105 Goup 13"
 date: "November 21, 2017"
-output: html_document
-editor_options: 
-  chunk_output_type: console
+output: 
+  html_document:
+    code_folding: hide
 ---
 #Member:
 Huilin Zhou (hz2507)  
@@ -26,7 +26,13 @@ Cleaning:
 2. Unified salary unit to "Annual" and recalculated the salary range and average salary.   
 3. Used Google Map to change location to longitute and latitute.   
   
-```{r,warning=FALSE,echo=FALSE,message=FALSE}
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  fig.width = 6,
+  fig.asp = .6,
+  out.width = "90%"
+)
 library(tidyverse)
 library(haven)
 library(readxl)
@@ -41,70 +47,69 @@ library(viridis)
 ```
 
 
-```{r,warning=FALSE,echo=FALSE}
+```{r,eval=FALSE}
 #clean data
-nyc_jobs<- read.csv("NYC_Jobs.csv") %>%
+df<- read.csv("NYC_Jobs.csv") %>%
   clean_names() %>%
   filter(job_category!= " ", 
          full_time_part_time_indicator!=" ", 
          preferred_skills!= " ",
          work_location!=" ") %>%
   head(2500) #google map limited to 2500
-nyc_jobs$job_category<- as.character(nyc_jobs$job_category)
+df$job_category<- as.character(df$job_category)
 
 #combine job category (function?)
 for (i in 1:2500) {
-    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("engineering", ignore_case = TRUE))] <- "Engineering"
-    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("finance", ignore_case = TRUE))] <- "Finance"
-    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("legal", ignore_case = TRUE))] <- "Legal Affairs"
-    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("technology", ignore_case = TRUE))] <- "Technology"
-    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("policy", ignore_case = TRUE))] <- "Policy"
-    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("communi", ignore_case = TRUE))] <- "Community"
-    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("clerical", ignore_case = TRUE))] <- "Clerical"
-    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("social service", ignore_case = TRUE))] <- "Social service"
-    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("public safety", ignore_case = TRUE))] <- "Public safety"
-    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("administration", ignore_case = TRUE))] <- "Administration"
-    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("operations", ignore_case = TRUE))] <- "Maintance"
-    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("maintenance ", ignore_case = TRUE))] <- "Maintance"
+    df$job_category[[i]][str_detect(df$job_category[[i]],regex("engineering", ignore_case = TRUE))] <- "Engineering"
+    df$job_category[[i]][str_detect(df$job_category[[i]],regex("finance", ignore_case = TRUE))] <- "Finance"
+    df$job_category[[i]][str_detect(df$job_category[[i]],regex("legal", ignore_case = TRUE))] <- "Legal Affairs"
+    df$job_category[[i]][str_detect(df$job_category[[i]],regex("technology", ignore_case = TRUE))] <- "Technology"
+    df$job_category[[i]][str_detect(df$job_category[[i]],regex("policy", ignore_case = TRUE))] <- "Policy"
+    df$job_category[[i]][str_detect(df$job_category[[i]],regex("communi", ignore_case = TRUE))] <- "Community"
+    df$job_category[[i]][str_detect(df$job_category[[i]],regex("clerical", ignore_case = TRUE))] <- "Clerical"
+    df$job_category[[i]][str_detect(df$job_category[[i]],regex("social service", ignore_case = TRUE))] <- "Social service"
+    df$job_category[[i]][str_detect(df$job_category[[i]],regex("public safety", ignore_case = TRUE))] <- "Public safety"
+    df$job_category[[i]][str_detect(df$job_category[[i]],regex("administration", ignore_case = TRUE))] <- "Administration"
+    df$job_category[[i]][str_detect(df$job_category[[i]],regex("operations", ignore_case = TRUE))] <- "Maintance"
+    df$job_category[[i]][str_detect(df$job_category[[i]],regex("maintenance ", ignore_case = TRUE))] <- "Maintance"
     
 }
 
 
 # change unit of salary and calculate mean
-nyc_jobs$salary_frequency<-as.character((nyc_jobs$salary_frequency))
-nyc_jobs$salary_range_from<- as.numeric(nyc_jobs$salary_range_from)
-nyc_jobs$salary_range_to<- as.numeric(nyc_jobs$salary_range_to)
-nyc_jobs$salary_range_from <- with(nyc_jobs, ifelse(salary_frequency == "Hourly", salary_range_from*1825,salary_range_from))
-nyc_jobs$salary_range_to <- with(nyc_jobs, ifelse(salary_frequency == "Hourly", salary_range_to*1825,salary_range_to))
-nyc_jobs$salary_range_from <- with(nyc_jobs, ifelse(salary_frequency == "Daily", salary_range_from*365*5/7,salary_range_from))
-nyc_jobs$salary_range_to <- with(nyc_jobs, ifelse(salary_frequency == "Daily", salary_range_to*365*5/7,salary_range_to))
+df$salary_frequency<-as.character((df$salary_frequency))
+df$salary_range_from<- as.numeric(df$salary_range_from)
+df$salary_range_to<- as.numeric(df$salary_range_to)
+df$salary_range_from <- with(df, ifelse(salary_frequency == "Hourly", salary_range_from*1825,salary_range_from))
+df$salary_range_to <- with(df, ifelse(salary_frequency == "Hourly", salary_range_to*1825,salary_range_to))
+df$salary_range_from <- with(df, ifelse(salary_frequency == "Daily", salary_range_from*365*5/7,salary_range_from))
+df$salary_range_to <- with(df, ifelse(salary_frequency == "Daily", salary_range_to*365*5/7,salary_range_to))
 
-nyc_jobs<-mutate(nyc_jobs,salary_frequency="Annual") %>%
+df<-mutate(df,salary_frequency="Annual") %>%
           mutate(salary_mean = (salary_range_to-salary_range_from)/2+salary_range_from)
-```
-
-```{r,message=FALSE,echo=FALSE,warning=FALSE}
 
 # get lon and lat
-nyc_jobs$work_location<-as.character(nyc_jobs$work_location)
-geo <- geocode(location = nyc_jobs$work_location, output="latlon", source="google")
-nyc_jobs<- nyc_jobs %>%
+df$work_location<-as.character(df$work_location)
+geo <- geocode(location = df$work_location, output="latlon", source="google")
+df<- df %>%
   mutate(lon = geo$lon, lat = geo$lat) %>%
   group_by(job_category)
 
+df <- df %>%
+  mutate(text_label = str_c("Annual mean salary$:",salary_mean))
+write.csv(df,file = "job.csv",row.names=FALSE)
 ```
 #Exploratory analysis: 
 
 ##location map
 First, we use longtitue and latitute of 2500 observations and plot their location in the map by different job category and text with average annual salary.  
-```{r,message=FALSE,warning=FALSE}
+```{r}
 # plotly worldwild
 Sys.setenv('MAPBOX_TOKEN' = 'pk.eyJ1IjoieHVxaW5nc2FsbHkiLCJhIjoiY2phZWh0djdyMHUzZTJ3bGR3MHFsdmIzZSJ9.vhYtu7zeAAuX6slhdDj6lA')
 
-p <- nyc_jobs %>%
-  mutate(text_label = str_c("Annual mean salary$:",salary_mean))
+nyc_jobs=read_csv("job.csv")
 
-plot_mapbox(p,lat = ~lat, lon = ~lon,
+plot_mapbox(nyc_jobs,lat = ~lat, lon = ~lon,
               size=2,
               split = nyc_jobs$job_category,
               mode = 'scattermapbox') %>%
@@ -125,7 +130,7 @@ Although the data set is about the job information of NY, there are some work lo
 
 # Boxplot of salary in different job category
 We draw the distribution of average annual salary of different job categories.
-```{r,warning=FALSE}
+```{r}
 plot_ly(nyc_jobs,y = ~salary_mean, color = ~job_category, type = "box",
           colors = "Set2") %>%
 layout(title = "Annual average salary distribution in 12 job categories")
@@ -135,7 +140,7 @@ Also in many areas, there are some outliers that have extreme high salary. So th
 
 # Job types with different educational requirement and base salary
 
-```{r,warning=FALSE,message=FALSE}
+```{r}
 job_data=nyc_jobs%>%
 select(job_category, salary_range_from, salary_range_to,minimum_qual_requirements,full_time_part_time_indicator,salary_frequency)%>%
 filter(job_category!= " ", minimum_qual_requirements!=" ",full_time_part_time_indicator=="F",salary_frequency=="Annual")
@@ -152,7 +157,7 @@ Other_data=filter(job_data,!grepl(paste(y, collapse = "|"),minimum_qual_requirem
 
 # Boxplots of salary for different educational requirement.
 
-```{r,warning=FALSE,message=FALSE}
+```{r}
 plot_ly(master_data, y = ~salary_range_from, color = ~job_category, type = "box", colors = "Set2")%>%
 layout(title = "Base salary of  jobs required at least master degree")
 
@@ -167,7 +172,7 @@ plot_ly(Other_data, y = ~salary_range_from, color = ~job_category, type = "box",
 
 # The wage increasing ranges of different jobs
 
-```{r,warning=FALSE,message=FALSE}
+```{r}
 job_data=mutate(job_data, salary_range=salary_range_to-salary_range_from)
 
 plot_ly(job_data, y=~salary_range, x= ~job_category, type="bar")%>%
@@ -176,7 +181,7 @@ plot_ly(job_data, y=~salary_range, x= ~job_category, type="bar")%>%
 
 # Table of positions, agency and job category. 
 
-```{r,warning=FALSE,message=FALSE}
+```{r}
 job_positions = nyc_jobs %>%
   select(x_of_positions, agency, job_category, salary_mean) %>%
   distinct() %>%
@@ -192,7 +197,7 @@ The table above shows the top-10 number of job positions in NYC from 2013 to 201
 
 # Bar plot of job category vs. number of positions of each year.
 
-```{r,warning=FALSE,message=FALSE}
+```{r}
 positions_plot = nyc_jobs %>%
   select(x_of_positions, agency, job_category, salary_mean, posting_date) %>%
   distinct() %>%
