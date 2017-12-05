@@ -1,6 +1,6 @@
 ---
 title: "Find a proper job in NYC -- Job analysis of NYC"
-author: "p8105 Goup 13"
+author: "P8105 Group 13"
 date: "November 21, 2017"
 output: 
   html_document:
@@ -44,6 +44,7 @@ library(wordcloud2)
 library(tidytext)
 library(forcats)
 library(viridis)
+library(ggplot2)
 ```
 
 
@@ -87,6 +88,19 @@ df$salary_range_to <- with(df, ifelse(salary_frequency == "Daily", salary_range_
 
 df<-mutate(df,salary_frequency="Annual") %>%
           mutate(salary_mean = (salary_range_to-salary_range_from)/2+salary_range_from)
+df$salary_frequency<-as.character((df$salary_frequency))
+df$salary_range_from<- as.numeric(df$salary_range_from)
+df$salary_range_to<- as.numeric(df$salary_range_to)
+
+#function?
+df$salary_range_from <- with(df, ifelse(salary_frequency == "Hourly", salary_range_from*1825,salary_range_from))
+df$salary_range_to <- with(df, ifelse(salary_frequency == "Hourly", salary_range_to*1825,salary_range_to))
+df$salary_range_from <- with(df, ifelse(salary_frequency == "Daily", salary_range_from*365*5/7,salary_range_from))
+df$salary_range_to <- with(df, ifelse(salary_frequency == "Daily", salary_range_to*365*5/7,salary_range_to))
+
+df<-mutate(df,salary_frequency="Annual") %>%
+          mutate(salary_mean = (salary_range_to-salary_range_from)/2+salary_range_from)
+
 
 # get lon and lat
 df$work_location<-as.character(df$work_location)
@@ -99,10 +113,10 @@ df <- df %>%
   mutate(text_label = str_c("Annual mean salary$:",salary_mean))
 write.csv(df,file = "job.csv",row.names=FALSE)
 ```
-#Exploratory analysis: 
 
 ##location map
 First, we use longtitue and latitute of 2500 observations and plot their location in the map by different job category and text with average annual salary.  
+
 ```{r}
 # plotly worldwild
 Sys.setenv('MAPBOX_TOKEN' = 'pk.eyJ1IjoieHVxaW5nc2FsbHkiLCJhIjoiY2phZWh0djdyMHUzZTJ3bGR3MHFsdmIzZSJ9.vhYtu7zeAAuX6slhdDj6lA')
@@ -115,7 +129,7 @@ plot_mapbox(nyc_jobs,lat = ~lat, lon = ~lon,
               mode = 'scattermapbox') %>%
   add_markers(
     text = ~text_label,
-    color = ~job_category,size = I(8)) %>%
+    color = ~job_category,size = I(9)) %>%
   layout(title = 'Work Location',
          font = list(color='white'),
          plot_bgcolor = '#191A1A', paper_bgcolor = '#191A1A',
@@ -125,30 +139,45 @@ plot_mapbox(nyc_jobs,lat = ~lat, lon = ~lon,
          margin = list(l = 25, r = 25,
                        b = 25, t = 25,
                        pad = 2))
+
 ```
-Although the data set is about the job information of NY, there are some work locations outside NY.  
+
+```{r} 
+#alternative map
+#For location in NYC(2500-611)
+myLocation_nyc = c(-74.23,40.58,-73.75,40.87)
+myMap_nyc <- get_map(location=myLocation_nyc,
+                 source = "stamen",maptype = "watercolor", crop = FALSE) 
+ggmap(myMap_nyc)+
+    geom_point(aes(x = lon, y = lat), data = nyc_jobs,
+      alpha = .5, color="darkred",size = 3) +
+    labs(title = "Work location in NYC")
+
+```
 
 # Boxplot of salary in different job category
 We draw the distribution of average annual salary of different job categories.
+
 ```{r}
-plot_ly(nyc_jobs,y = ~salary_mean, color = ~job_category, type = "box",
+nyc_jobs %>%
+plot_ly(y = ~salary_mean, color = ~job_category, type = "box",
           colors = "Set2") %>%
 layout(title = "Annual average salary distribution in 12 job categories")
 ```
-We found that Technology and Engineering have high salary in as a Whole and Clerical jobs have lowest salary. It makes sense that most of technology and engineering work need advanced skills and knowledge which deserve great pay.  
-Also in many areas, there are some outliers that have extreme high salary. So the amount of salary also depends on person that you can get far beyound average salary if you do well in your position. 
 
-# Job types with different educational requirement and base salary
 
 ```{r}
-job_data=nyc_jobs%>%
-select(job_category, salary_range_from, salary_range_to,minimum_qual_requirements,full_time_part_time_indicator,salary_frequency)%>%
-filter(job_category!= " ", minimum_qual_requirements!=" ",full_time_part_time_indicator=="F",salary_frequency=="Annual")
- 
+# Job category with different educational requirement and base salary
+job_data=nyc_jobs %>%
+select(job_category, salary_range_from, salary_range_to,minimum_qual_requirements,full_time_part_time_indicator,salary_frequency) %>%
+filter(job_category!= " ", minimum_qual_requirements!=" ",full_time_part_time_indicator =="F",salary_frequency=="Annual")
+
+
 x=c("baccalaureate", "Bachelor")
 y=c("Master","master")
 
 master_data=filter(job_data,grepl(paste(y, collapse = "|"),minimum_qual_requirements),!grepl(paste(x, collapse = "|"),minimum_qual_requirements))
+  
 
 baccalaureate_data = filter(job_data,grepl(paste(x, collapse = "|"),minimum_qual_requirements),!grepl(paste(y, collapse = "|"),minimum_qual_requirements))
 
@@ -156,30 +185,35 @@ Other_data=filter(job_data,!grepl(paste(y, collapse = "|"),minimum_qual_requirem
 ```
 
 # Boxplots of salary for different educational requirement.
-
 ```{r}
-plot_ly(master_data, y = ~salary_range_from, color = ~job_category, type = "box", colors = "Set2")%>%
+plot_ly(master_data, y = ~salary_range_from, color = ~job_category, type = "box", colors = "Set2") %>%
+
 layout(title = "Base salary of  jobs required at least master degree")
 
-plot_ly(baccalaureate_data, y = ~salary_range_from, color = ~job_category, type = "box", colors = "Set2")%>%
-  layout(title = "Base salary of jobs required at least baccalaureate degree(No need of master's)")
+plot_ly(baccalaureate_data, y = ~salary_range_from, color = ~job_category, type = "box", colors = "Set2") %>%
+  layout(title = "Base salary of jobs required baccalaureate degree(No need master)")
   
 plot_ly(Other_data, y = ~salary_range_from, color = ~job_category, type = "box",
-          colors = "Set2")%>%
+          colors = "Set2") %>%
   layout(title = "Base salary of different kind of jobs without requirement of degree")
 
 ```
 
-# The wage increasing ranges of different jobs
+For those three plots, we see that in the boxplot of base salary of jobs required for at least master degree, engineering has the highest median base salary and the overall base salary of Legal Affairs are pretty high compared with other job category. While in the boxplot of base salary of jobs required for baccalaureate technology has the highest median base salary, and the overall salary of Administration is pretty high compared with others. In the boxplot of base salary without requirement of degree, the median base salary and the overall base salary of Engineering are all pretty high compared with other job categories.
 
+Comparing those three plots, we can see the overall base salary of jobs required for at least master degree are higher than the overall base salary of jobs required for baccalaureate. The distribution of the base salary of jobs without degrees' requirement is not centralized and the base salaries mainly depend on the job positon in this case.
+
+#The wage increasing ranges of different jobs
 ```{r}
-job_data=mutate(job_data, salary_range=salary_range_to-salary_range_from)
+job_data=mutate(job_data, salary_range = salary_range_to - salary_range_from)
 
-plot_ly(job_data, y=~salary_range, x= ~job_category, type="bar")%>%
+plot_ly(job_data, y = ~salary_range,x = ~job_category, type = "bar") %>%
   layout(title = "The wage increasing ranges of different kinds of jobs")
 ```
 
-# Table of positions, agency and job category. 
+From the plot, we can see that the job category of Legal Affairs has the largest wage increasing range and the job category of Clerical has the smallest wage increasing range compared with other different job categories.
+
+## Table of positions, agency and job category. 
 
 ```{r}
 job_positions = nyc_jobs %>%
@@ -193,9 +227,9 @@ job_positions = nyc_jobs %>%
 knitr::kable(head(job_positions, 10))
 ```
 
-The table above shows the top-10 number of job positions in NYC from 2013 to 2017. `r job_positions[[1]][1]` with job category "Health" has the most job positions.
+The table above shows the top-10 number of job positions in NYC from 2011 to 2017. `r job_positions[[1]][1]` with job category "Health" has the most job positions.
 
-# Bar plot of job category vs. number of positions of each year.
+## Bar plot of job category vs. number of positions of each year.
 
 ```{r}
 positions_plot = nyc_jobs %>%
@@ -214,7 +248,10 @@ plot_ly(positions_plot, x = ~job_category, y = ~positions,
 
 The bar chart above shows the number of positions for each job category in each year. From 2013 to 2017, the number of job positions in each category keeps increasing. And all categories have a dramatically increase in job positions in 2017. This might because more and more companies were founded and developed in 2017, thus they need more employees joining in. Besides, since this dataset contains all job information from NYC official job website, as the year increases, more people found this website and created job postings on this site.
 
+
+
 # Wordcount analysis of Preffered Skills and Minimum Qual Requirements
+
 ```{r}
 nyc_jobs = nyc_jobs%>% 
   ungroup()%>%
@@ -260,10 +297,4 @@ wordcloud2(jobs_words_requirement, size = 2,color = 'random-light',
            backgroundColor = "gray", fontWeight='bold',  
            minRotation = -pi/3, maxRotation = pi/3,rotateRatio = 0.8)  
 ```
-
-#Additional analysis:
-If you undertake formal statistical analyses, describe these in detail  
-
-#Discussion: 
-What were your findings? Are they what you expect? What insights into the data can you make?
 
