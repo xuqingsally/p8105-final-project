@@ -13,10 +13,19 @@ Qing Xu (qx2178)
 Zhaoyu Liu (zl2638)  
 
 #Motivation: 
-Many of us will find a job in recent years. In New York City, what type of job can be payed for higher salary? If that's the ideal job for me , what skills should I have before applying for it?  Also where should I rent an apartment if I want to live close to that type of positions? By looking at the NYC jobs data set from 2013 to 2017,we wish to give some advice on job catrgory, required skills and salary for people who are seeking for a job.  
+Many of us will find a job in recent years. In New York City government, what type of job can be payed for higher salary? If that's the ideal job for me , what skills should I have before applying for it?  Also where should I rent an apartment if I want to live close to that type of positions? By looking at the NYC jobs data set from 2013 to 2017,we wish to give some advice on job catrgory, required skills and salary for people who are seeking for a job.  
+
 
 #Initial questions:
-What questions are you trying to answer? How did these questions evolve over the course of the project? What new questions did you consider in the course of your analysis?
+What questions are you trying to answer? 
+-- We are trying to analyze the nyc government jobs based on the salary, the requirement of the degree, locations, job type and also required skills to provide people with a viewable results to let them find the potential suitable job.
+We did the research on the question like where to find a suitable job with the highest salary. What's the highest base salary job in need of specific education degree?
+
+How did these questions evolve over the course of the project? 
+--While doing the analysis of the dataset and making the visualization plots, we started to think about making the wordcount to analyze the preferred skills in different job category to better find out the potential suitable job for different people. Besides, we made the bar chart to find out the number of positions for each job category in each year from 2013 to 2017, and we found out the  number of job positions in each category keeps increasing, which give us better evidence to research on the question of finding suitable jobs.
+
+What new questions did you consider in the course of your analysis?
+-- We will consider linearity regression model to test the association between base salary and the level of the position in the analysis.
 
 #Data: 
 Source: https://data.cityofnewyork.us/City-Government/NYC-Jobs/kpav-sd4t/data  
@@ -26,6 +35,7 @@ Cleaning:
 2. Unified salary unit to "Annual" and recalculated the salary range and average salary.   
 3. Used Google Map to change location to longitute and latitute.   
   
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
@@ -113,8 +123,10 @@ df <- df %>%
   mutate(text_label = str_c("Annual mean salary$:",salary_mean))
 write.csv(df,file = "job.csv",row.names=FALSE)
 ```
+#Exploratory analysis: 
 
-##location map
+
+##Location map
 First, we use longtitue and latitute of 2500 observations and plot their location in the map by different job category and text with average annual salary.  
 
 ```{r}
@@ -199,7 +211,7 @@ plot_ly(Other_data, y = ~salary_range_from, color = ~job_category, type = "box",
 
 ```
 
-For those three plots, we see that in the boxplot of base salary of jobs required for at least master degree, engineering has the highest median base salary and the overall base salary of Legal Affairs are pretty high compared with other job category. While in the boxplot of base salary of jobs required for baccalaureate technology has the highest median base salary, and the overall salary of Administration is pretty high compared with others. In the boxplot of base salary without requirement of degree, the median base salary and the overall base salary of Engineering are all pretty high compared with other job categories.
+For those three plots, we see that in the boxplot of base salary of jobs required for at least master degree, engineering has the highest median base salary and the overall base salary of Legal Affairs are pretty high compared with other job category. While in the boxplot of base salary of jobs required for baccalaureate degree, technology has the highest median base salary, and the overall salary of Administration is pretty high compared with others. In the boxplot of base salary without requirement of degree, the median base salary and the overall base salary of Engineering are all pretty high compared with other job categories.
 
 Comparing those three plots, we can see the overall base salary of jobs required for at least master degree are higher than the overall base salary of jobs required for baccalaureate. The distribution of the base salary of jobs without degrees' requirement is not centralized and the base salaries mainly depend on the job positon in this case.
 
@@ -297,4 +309,8 @@ wordcloud2(jobs_words_requirement, size = 2,color = 'random-light',
            backgroundColor = "gray", fontWeight='bold',  
            minRotation = -pi/3, maxRotation = pi/3,rotateRatio = 0.8)  
 ```
-
+#Additional analysis:
+Linear regression analysis
+#Discussion: 
+What were your findings? Are they what you expect? What insights into the data can you make?
+--We found that for base salary of jobs required for at least master degree, engineering has the highest median base salary, for base salary of jobs required for baccalaureate degree, technology has the highest median base salary, and for base salary without requirement of degree, the median base salary and the overall base salary of Engineering are all pretty high compared with other job categories. From 2013 to 2017, the number of job positions in each category keeps increasing. And in 2017 all categories have a dramatically increase in job positions. This might because there are more positions needed in government.
