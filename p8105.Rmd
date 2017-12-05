@@ -120,14 +120,13 @@ plot_ly(y = ~salary_mean, color = ~job_category, type = "box",
           colors = "Set2") %>%
 layout(title = "Annual average salary distribution in 12 job categories")
 ```
-<<<<<<< HEAD
-# Job types with different educational requirement and base salary
-```{r}
-job_data=nyc_jobs%>%
-select(job_category, salary_range_from, salary_range_to,minimum_qual_requirements,full_time_part_time_indicator,salary_frequency)%>%
+
+# Job category with different educational requirement and base salary
+```{r echo=False}
+job_data=nyc_jobs %>%
+select(job_category, salary_range_from, salary_range_to,minimum_qual_requirements,full_time_part_time_indicator,salary_frequency) %>%
 filter(job_category!= " ", minimum_qual_requirements!=" ",full_time_part_time_indicator=="F",salary_frequency=="Annual")
  
-
 
 x=c("baccalaureate", "Bachelor")
 y=c("Master","master")
@@ -139,27 +138,34 @@ baccalaureate_data = filter(job_data,grepl(paste(x, collapse = "|"),minimum_qual
 
 Other_data=filter(job_data,!grepl(paste(y, collapse = "|"),minimum_qual_requirements),!grepl(paste(x, collapse = "|"),minimum_qual_requirements))
 ```
-Boxplots of salary for different educational requirement.
-```{r}
-master_plot=plot_ly(master_data, y = ~salary_range_from, color = ~job_category, type = "box", colors = "Set2")%>%
+Boxplots of salary for different educational requirements.
+```{r echo=False}
+master_plot = plot_ly(master_data, y = ~salary_range_from, color = ~job_category, type = "box", colors = "Set2") %>%
 layout(title = "Base salary of  jobs required at least master degree")
 
-baccalaureate_plot=plot_ly(baccalaureate_data, y = ~salary_range_from, color = ~job_category, type = "box", colors = "Set2")%>%
+baccalaureate_plot = plot_ly(baccalaureate_data, y = ~salary_range_from, color = ~job_category, type = "box", colors = "Set2") %>%
   layout(title = "Base salary of jobs required at least baccalaureate degree(No need of master's)")
   
-Other_plot=plot_ly(Other_data, y = ~salary_range_from, color = ~job_category, type = "box",
-          colors = "Set2")%>%
+Other_plot = plot_ly(Other_data, y = ~salary_range_from, color = ~job_category, type = "box",
+          colors = "Set2") %>%
   layout(title = "Base salary of different kind of jobs without requirement of degree")
 
 ```
-#The wage increasing ranges of different jobs
-```{r}
-job_data=mutate(job_data, salary_range=salary_range_to-salary_range_from)
 
-plot_ly(job_data, y=~salary_range, x= ~job_category, type="bar")%>%
+For those three plots, we see that in the boxplot of base salary of jobs required for at least master degree, engineering has the highest median base salary and the overall base salary of Legal Affairs are pretty high compared with other job category. While in the boxplot of base salary of jobs required for baccalaureate technology has the highest median base salary, and the overall salary of Administration is pretty high compared with others. In the boxplot of base salary without requirement of degree, the median base salary and the overall base salary of Engineering are all pretty high compared with other job categories.
+
+Comparing those three plots, we can see the overall base salary of jobs required for at least master degree are higher than the overall base salary of jobs required for baccalaureate. The distribution of the base salary of jobs without degrees' requirement is not centralized and the base salaries mainly depend on the job positon in this case.
+
+
+#The wage increasing ranges of different jobs
+```{r echo=False}
+job_data=mutate(job_data, salary_range = salary_range_to-salary_range_from)
+
+plot_ly(job_data, y=~salary_range, x= ~job_category, type = "bar") %>%
   layout(title = "The wage increasing ranges of different kinds of jobs")
 ```
 
+From the plot, we can see that the job category of Legal Affairs has the largest wage increasing range and the job category of Clerical has the smallest wage increasing range compared with other different job categories.
 
 ## Table of positions, agency and job category. 
 
