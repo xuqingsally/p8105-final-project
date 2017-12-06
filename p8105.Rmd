@@ -235,7 +235,7 @@ job_positions = nyc_jobs %>%
 knitr::kable(head(job_positions, 10))
 ```
 
-The table above shows the top-10 number of job positions in NYC from 2011 to 2017. `r job_positions[[1]][1]` with job category "Health" has the most job positions.
+The table above shows the top-10 number of job positions in NYC from 2013 to 2017. `r job_positions[[1]][1]` with job category "Health" has the most job positions.
 
 ## Bar plot of job category vs. number of positions of each year.
 
@@ -248,6 +248,7 @@ positions_plot = nyc_jobs %>%
   group_by(job_category, year) %>%
   summarise(positions = sum(x_of_positions))
 
+# Make a bar plot of job category vs. number of positions of each year
 plot_ly(positions_plot, x = ~job_category, y = ~positions,
         color = ~year, type = "bar") %>%
   layout(title = "Number of positions of job categories in each year",
