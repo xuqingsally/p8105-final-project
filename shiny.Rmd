@@ -187,7 +187,8 @@ jobs_words_skill = ski%>%
 ```{r}
 renderPlotly({ 
   job_positions = nyc_jobs %>%
-  group_by(job_category) %>%
+  select(x_of_positions, agency, job_category, salary_mean)%>%
+  group_by(job_category,salary_mean) %>%
   summarise(positions = sum(x_of_positions))%>%
   filter(year == input$year_choice,
          salary_mean %in% input$sal_range[1]:input$sal_range[2])
