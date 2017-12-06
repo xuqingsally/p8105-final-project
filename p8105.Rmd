@@ -1,7 +1,7 @@
 ---
 title: "Find a proper job in NYC -- Job analysis of NYC"
 author: "P8105 Group 13"
-date: "November 21, 2017"
+date: "December 4, 2017"
 output: 
   html_document:
     code_folding: hide
@@ -13,27 +13,25 @@ Qing Xu (qx2178)
 Zhaoyu Liu (zl2638)  
 
 #Motivation: 
-Many of us will find a job in recent years. In New York City government, what type of job can be payed for higher salary? If that's the ideal job for me , what skills should I have before applying for it?  Also where should I rent an apartment if I want to live close to that type of positions? By looking at the NYC jobs data set from 2013 to 2017,we wish to give some advice on job catrgory, required skills and salary for people who are seeking for a job.  
+Many of us will find a job in recent years. In New York City government area, what type of jobs can be payed for higher salary? If that's the ideal job for me , what skills should I have before applying for it?  Also where should I rent an apartment if I want to live close to that type of positions? By looking at the NYC jobs data set from 2013 to 2017,we wish to give some advice on job catrgories, required skills and salary range for people who are seeking for a job.  
 
 
 #Initial questions:
-What questions are you trying to answer? 
--- We are trying to analyze the nyc government jobs based on the salary, the requirement of the degree, locations, job type and also required skills to provide people with a viewable results to let them find the potential suitable job.
-We did the research on the question like where to find a suitable job with the highest salary. What's the highest base salary job in need of specific education degree?
-
-How did these questions evolve over the course of the project? 
---While doing the analysis of the dataset and making the visualization plots, we started to think about making the wordcount to analyze the preferred skills in different job category to better find out the potential suitable job for different people. Besides, we made the bar chart to find out the number of positions for each job category in each year from 2013 to 2017, and we found out the  number of job positions in each category keeps increasing, which give us better evidence to research on the question of finding suitable jobs.
-
-What new questions did you consider in the course of your analysis?
--- We will consider linearity regression model to test the association between base salary and the level of the position in the analysis.
-
+We are trying to analyze the nyc government jobs based on the salary, the requirement of the degree, locations, job type and also required skills to provide people with a viewable results to let them find the potential suitable job.  
+We did the research on the question like where to find a suitable job with the highest salary. What's the highest base salary job in need of specific education degree?  
+  
+While doing the analysis of the dataset and making the visualization plots, we started to think about making the wordcount to analyze the preferred skills in different job category to better find out the potential suitable job for different people. Besides, we made the bar chart to find out the number of positions for each job category in each year from 2013 to 2017, and we found out the  number of job positions in each category keeps increasing, which give us better evidence to research on the question of finding suitable jobs.  
+  
+After analysizing job information among the data set,we will consider linearity regression model to test the association between base salary and the level of the position in the analysis. Also we want to know whether these conclusions can be generalized to other cities.  
+  
 #Data: 
 Source: https://data.cityofnewyork.us/City-Government/NYC-Jobs/kpav-sd4t/data  
 Scrape:We doWnloaded the data set from the website and the original data set contains 3174 job information. We selected data with information about work location, job category, preferred skills and full/part time. We want to use Google Map to get longtitute and latitute from work locations. Since the Google map has a limit of 2500 observation one time, we selected first 2500 observations from the data set.  
 Cleaning:  
 1. Merged job category if they are the same kind but just have different names. Finally we got 12 kinds of job categories.    
 2. Unified salary unit to "Annual" and recalculated the salary range and average salary.   
-3. Used Google Map to change location to longitute and latitute.   
+3. Used Google Map to change location to longitute and latitute.  
+4. Since Google map has limitation, we wrote a new data set after cleaning it and use it in the after analysize.    
   
 
 ```{r setup, include=FALSE}
@@ -69,7 +67,7 @@ df<- read.csv("NYC_Jobs.csv") %>%
   head(2500) #google map limited to 2500
 df$job_category<- as.character(df$job_category)
 
-#combine job category (function?)
+#combine job category
 for (i in 1:2500) {
     df$job_category[[i]][str_detect(df$job_category[[i]],regex("engineering", ignore_case = TRUE))] <- "Engineering"
     df$job_category[[i]][str_detect(df$job_category[[i]],regex("finance", ignore_case = TRUE))] <- "Finance"
@@ -101,8 +99,6 @@ df<-mutate(df,salary_frequency="Annual") %>%
 df$salary_frequency<-as.character((df$salary_frequency))
 df$salary_range_from<- as.numeric(df$salary_range_from)
 df$salary_range_to<- as.numeric(df$salary_range_to)
-
-#function?
 df$salary_range_from <- with(df, ifelse(salary_frequency == "Hourly", salary_range_from*1825,salary_range_from))
 df$salary_range_to <- with(df, ifelse(salary_frequency == "Hourly", salary_range_to*1825,salary_range_to))
 df$salary_range_from <- with(df, ifelse(salary_frequency == "Daily", salary_range_from*365*5/7,salary_range_from))
@@ -121,6 +117,7 @@ df<- df %>%
 
 df <- df %>%
   mutate(text_label = str_c("Annual mean salary$:",salary_mean))
+# write a new data set and use it in the following analysize
 write.csv(df,file = "job.csv",row.names=FALSE)
 ```
 #Exploratory analysis: 
@@ -166,8 +163,10 @@ ggmap(myMap_nyc)+
     labs(title = "Work location in NYC")
 
 ```
+  
+From the map, we found that most of jobs located in New York but also there are some jobs located all over the world. In New York, most jobs located in the lower Manhattan and Brooklyn Heights where are prosperous places.  
 
-# Boxplot of salary in different job category
+## Boxplot of salary in different job category
 We draw the distribution of average annual salary of different job categories.
 
 ```{r}
@@ -176,7 +175,8 @@ plot_ly(y = ~salary_mean, color = ~job_category, type = "box",
           colors = "Set2") %>%
 layout(title = "Annual average salary distribution in 12 job categories")
 ```
-
+  
+From the boxplot, we found that "Technology" and "Engineering" jobs have higher average salary and "Clerical" jobs has lower average salary among the 12 job categories. It makes sense that the first two job categories need professional skills and knowledge while those skills are unnecessary for clerical work. Also there exists some outliers in several categories. If you really did well in your position, it doesn't matter what's your job category. It is important that you do the work that interests you, but at the same time, have a job in technology and engineering may be more well-paid.   
 
 ```{r}
 # Job category with different educational requirement and base salary
@@ -196,7 +196,7 @@ baccalaureate_data = filter(job_data,grepl(paste(x, collapse = "|"),minimum_qual
 Other_data=filter(job_data,!grepl(paste(y, collapse = "|"),minimum_qual_requirements),!grepl(paste(x, collapse = "|"),minimum_qual_requirements))
 ```
 
-# Boxplots of salary for different educational requirement.
+## Boxplots of salary for different educational requirement.
 ```{r}
 plot_ly(master_data, y = ~salary_range_from, color = ~job_category, type = "box", colors = "Set2") %>%
 
@@ -215,7 +215,7 @@ For those three plots, we see that in the boxplot of base salary of jobs require
 
 Comparing those three plots, we can see the overall base salary of jobs required for at least master degree are higher than the overall base salary of jobs required for baccalaureate. The distribution of the base salary of jobs without degrees' requirement is not centralized and the base salaries mainly depend on the job positon in this case.
 
-#The wage increasing ranges of different jobs
+##The wage increasing ranges of different jobs
 ```{r}
 job_data=mutate(job_data, salary_range = salary_range_to - salary_range_from)
 
@@ -262,7 +262,7 @@ The bar chart above shows the number of positions for each job category in each 
 
 
 
-# Wordcount analysis of Preffered Skills and Minimum Qual Requirements
+## Wordcount analysis of Preffered Skills and Minimum Qual Requirements
 
 ```{r}
 nyc_jobs = nyc_jobs%>% 
@@ -299,7 +299,7 @@ The word count plots of prefferred skills and minimum qual requirements. After d
 For miminum qual requirements, education is really important, for that there are several words related to education shown on the plot such like "school", "college", "degree", "education", "graduate". Those words indicates a high requirement of education like bacherlor or master degree. And the word york indicates the requirement of residency in New York. For different knids of job, the skill and minimum requirement may change. The result of this part will be shown on the Shinny Website.
 The word clouds of skills and minimum requirement are shown below, which indicates a more straight view of word frequency.
 
-# Word Cloud of Preffered Skills and Minimum Qual Requirements
+## Word Cloud of Preffered Skills and Minimum Qual Requirements
 ```{r}
 set.seed(123)
 wordcloud2(jobs_words_skill, size = 2,color = 'random-light',  
@@ -309,8 +309,15 @@ wordcloud2(jobs_words_requirement, size = 2,color = 'random-light',
            backgroundColor = "gray", fontWeight='bold',  
            minRotation = -pi/3, maxRotation = pi/3,rotateRatio = 0.8)  
 ```
+
 #Additional analysis:
-Linear regression analysis
+Linear regression analysis  
+
 #Discussion: 
-What were your findings? Are they what you expect? What insights into the data can you make?
---We found that for base salary of jobs required for at least master degree, engineering has the highest median base salary, for base salary of jobs required for baccalaureate degree, technology has the highest median base salary, and for base salary without requirement of degree, the median base salary and the overall base salary of Engineering are all pretty high compared with other job categories. From 2013 to 2017, the number of job positions in each category keeps increasing. And in 2017 all categories have a dramatically increase in job positions. This might because there are more positions needed in government.
+There are more job positions located at prosperous places and downtown. It makes sense that companies and departments always located in downtown.  
+We found that for base salary of jobs required for at least master degree, engineering has the highest median base salary, for base salary of jobs required for baccalaureate degree, technology has the highest median base salary, and for base salary without requirement of degree, the median base salary and the overall base salary of Engineering are all pretty high compared with other job categories.   
+From 2013 to 2017, the number of job positions in each category keeps increasing. And in 2017 all categories have a dramatically increase in job positions. This might because there are more positions needed in government during recent year.  Engineering positions has greatest increasing between 2016 to 2017,and job in health has great increasing between 2015 to 2016. We may predict that there will be great needed for talents in health and engineering area. While jobs in maintance has decrease between 2013 to 2014. Maybe this is because of the development of technology, fewer manpower is needed in maintance.  
+"Experience" is the top popular word in both preferred skills and requirements. It is important for people who want a job to get prepared. We may do some internship or related project to make us more competitive. Other top words in preferred skills are "written","project" and "team" . Employers always preferred candidates with strong skills especially written skills and team work.In requirements, "school" appears frequently. We may infer that education background is also important.  
+Linear 
+
+
