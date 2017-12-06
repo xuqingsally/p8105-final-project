@@ -155,17 +155,18 @@ plot_mapbox(nyc_jobs,lat = ~lat, lon = ~lon,
 
 From the map, we found that most of jobs located in New York but also there are some jobs located all over the world. In New York, most jobs located in the lower Manhattan and Brooklyn Heights where are prosperous places. Zoom in the map to see details of the distribution of jobs. 
 
-## Boxplot of salary in different job category
+## Distribution of salary in different job category
 We draw the distribution of average annual salary of different job categories.
 
 ```{r}
-nyc_jobs %>%
-plot_ly(y = ~salary_mean, color = ~job_category, type = "box",
-          colors = "Set2") %>%
-layout(title = "Annual average salary distribution in 12 job categories")
+v<- ggplot(nyc_jobs,aes(x = job_category, y = salary_mean))+
+     geom_violin(aes(fill = job_category), alpha = .5)+
+     labs(title = "Annual average salary distribution in 12 job categories")+
+     theme(axis.text.x = element_text(angle = 90, hjust = 1))
+ggplotly(v)
 ```
   
-From the boxplot, we found that "Technology" and "Engineering" jobs have higher average salary and "Clerical" jobs has lower average salary among the 12 job categories. It makes sense that the first two job categories need professional skills and knowledge while those skills are unnecessary for clerical work. Also there exists some outliers in several categories. If you really did well in your position, it doesn't matter what's your job category. It is important that you do the work that interests you, but at the same time, have a job in technology and engineering may be more well-paid.   
+From the violin plot, we found that "Technology" and "Engineering" jobs have higher average salary and "Clerical" jobs has lower average salary among the 12 job categories. It makes sense that the first two job categories need professional skills and knowledge while those skills are unnecessary for clerical work. Also there exists some outliers in several categories. If you really did well in your position, it doesn't matter what's your job category. It is important that you do the work that interests you, but at the same time, have a job in technology and engineering may be more well-paid.   
 
 ```{r}
 # Job category with different educational requirement and base salary
