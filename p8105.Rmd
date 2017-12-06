@@ -19,7 +19,7 @@ Many of us will find a job in recent years. In New York City government area, wh
 
 
 #Initial questions:
-We are trying to analyze the nyc government jobs based on the salary, the requirement of the degree, locations, job type and also required skills to provide people with a viewable results to let them find the potential suitable job.  
+We are trying to analyze the NYC government jobs based on the salary, the requirement of the degree, locations, job type and also required skills to provide people with a viewable results to let them find the potential suitable job.  
 We did the research on the question like where to find a suitable job with the highest salary. What's the highest base salary job in need of specific education degree?  
   
 While doing the analysis of the dataset and making the visualization plots, we started to think about making the wordcount to analyze the preferred skills in different job category to better find out the potential suitable job for different people. Besides, we made the bar chart to find out the number of positions for each job category in each year from 2013 to 2017, and we found out the  number of job positions in each category keeps increasing, which give us better evidence to research on the question of finding suitable jobs.  
@@ -28,11 +28,11 @@ After analysizing job information among the data set,we will consider linearity 
   
 #Data: 
 Source: https://data.cityofnewyork.us/City-Government/NYC-Jobs/kpav-sd4t/data  
-Scrape:We doWnloaded the data set from the website and the original data set contains 3174 job information. We selected data with information about work location, job category, preferred skills and full/part time. We want to use Google Map to get longtitute and latitute from work locations. Since the Google map has a limit of 2500 observation one time, we selected first 2500 observations from the data set.  
+Scrape:We downloaded the data set from the website and the original data set contains 3174 job information. We selected data with information about work location, job category, preferred skills and full/part time. We want to use Google Map to get longtitute and latitute from work locations. Since the Google map has a limit of 2500 observation one time, we selected first 2500 observations from the data set.  
 Cleaning:  
-1. Merged job category if they are the same kind but just have different names. Finally we got 12 kinds of job categories.    
-2. Unified salary unit to "Annual" and recalculated the salary range and average salary.   
-3. Used Google Map to change location to longitute and latitute.  
+1. Merge job category if they are the same kind but just have different names. Finally we got 12 kinds of job categories.    
+2. Unify salary unit to "Annual" and recalculated the salary range and average salary.   
+3. Use Google Map to change location to longitute and latitute.  
 4. Since Google map has limitation, we wrote a new data set after cleaning it and use it in the after analysize.    
   
 
@@ -110,7 +110,7 @@ df<-mutate(df,salary_frequency="Annual") %>%
           mutate(salary_mean = (salary_range_to-salary_range_from)/2+salary_range_from)
 
 
-# get lon and lat
+# get longtitude and latitude
 df$work_location<-as.character(df$work_location)
 geo <- geocode(location = df$work_location, output="latlon", source="google")
 df<- df %>%
@@ -153,20 +153,7 @@ plot_mapbox(nyc_jobs,lat = ~lat, lon = ~lon,
 
 ```
 
-```{r} 
-#alternative map
-#For location in NYC(2500-611)
-myLocation_nyc = c(-74.23,40.58,-73.75,40.87)
-myMap_nyc <- get_map(location=myLocation_nyc,
-                 source = "stamen",maptype = "watercolor", crop = FALSE) 
-ggmap(myMap_nyc)+
-    geom_point(aes(x = lon, y = lat), data = nyc_jobs,
-      alpha = .5, color="darkred",size = 3) +
-    labs(title = "Work location in NYC")
-
-```
-  
-From the map, we found that most of jobs located in New York but also there are some jobs located all over the world. In New York, most jobs located in the lower Manhattan and Brooklyn Heights where are prosperous places.  
+From the map, we found that most of jobs located in New York but also there are some jobs located all over the world. In New York, most jobs located in the lower Manhattan and Brooklyn Heights where are prosperous places. Zoom in the map to see details of the distribution of jobs. 
 
 ## Boxplot of salary in different job category
 We draw the distribution of average annual salary of different job categories.
@@ -182,27 +169,33 @@ From the boxplot, we found that "Technology" and "Engineering" jobs have higher 
 
 ```{r}
 # Job category with different educational requirement and base salary
-job_data=nyc_jobs %>%
-select(job_category, salary_range_from, salary_range_to,minimum_qual_requirements,full_time_part_time_indicator,salary_frequency) %>%
-filter(job_category!= " ", minimum_qual_requirements!=" ",full_time_part_time_indicator =="F",salary_frequency=="Annual")
+job_data = nyc_jobs %>%
+  select(job_category, salary_range_from, salary_range_to,
+         minimum_qual_requirements, full_time_part_time_indicator,
+         salary_frequency) %>%
+  filter(job_category!= " ", minimum_qual_requirements!=" ",
+         full_time_part_time_indicator == "F", salary_frequency == "Annual")
 
 
-x=c("baccalaureate", "Bachelor")
-y=c("Master","master")
+x = c("baccalaureate", "Bachelor")
+y = c("Master", "master")
 
-master_data=filter(job_data,grepl(paste(y, collapse = "|"),minimum_qual_requirements),!grepl(paste(x, collapse = "|"),minimum_qual_requirements))
+master_data = filter(job_data, grepl(paste(y, collapse = "|"), minimum_qual_requirements),
+                     !grepl(paste(x, collapse = "|"), minimum_qual_requirements))
   
 
-baccalaureate_data = filter(job_data,grepl(paste(x, collapse = "|"),minimum_qual_requirements),!grepl(paste(y, collapse = "|"),minimum_qual_requirements))
+baccalaureate_data = filter(job_data, grepl(paste(x, collapse = "|"), minimum_qual_requirements),
+                            !grepl(paste(y, collapse = "|"), minimum_qual_requirements))
 
-Other_data=filter(job_data,!grepl(paste(y, collapse = "|"),minimum_qual_requirements),!grepl(paste(x, collapse = "|"),minimum_qual_requirements))
+Other_data = filter(job_data, !grepl(paste(y, collapse = "|"), minimum_qual_requirements),
+                    !grepl(paste(x, collapse = "|"), minimum_qual_requirements))
 ```
 
 ## Boxplots of salary for different educational requirement.
 ```{r}
 plot_ly(master_data, y = ~salary_range_from, color = ~job_category, type = "box", colors = "Set2") %>%
 
-layout(title = "Base salary of  jobs required at least master degree")
+layout(title = "Base salary of jobs required at least master degree")
 
 plot_ly(baccalaureate_data, y = ~salary_range_from, color = ~job_category, type = "box", colors = "Set2") %>%
   layout(title = "Base salary of jobs required baccalaureate degree(No need master)")
@@ -219,9 +212,9 @@ Comparing those three plots, we can see the overall base salary of jobs required
 
 ##The wage increasing ranges of different jobs
 ```{r}
-job_data=mutate(job_data, salary_range = salary_range_to - salary_range_from)
+job_data = mutate(job_data, salary_range = salary_range_to - salary_range_from)
 
-plot_ly(job_data, y = ~salary_range,x = ~job_category, type = "bar") %>%
+plot_ly(job_data, y = ~salary_range, x = ~job_category, type = "bar") %>%
   layout(title = "The wage increasing ranges of different kinds of jobs")
 ```
 
