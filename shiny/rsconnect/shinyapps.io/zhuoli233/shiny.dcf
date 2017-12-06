@@ -5,6 +5,6 @@ account: zhuoli233
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 235254
-bundleId: 1119228
+bundleId: 1119262
 url: https://zhuoli233.shinyapps.io/shiny/
-when: 1512582167.21053
+when: 1512583335.36561

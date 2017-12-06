@@ -143,7 +143,7 @@ plot_mapbox(nyc_jobs,lat = ~lat, lon = ~lon,
               mode = 'scattermapbox') %>%
   add_markers(
     text = ~text_label,
-    color = ~job_category,size = I(9)) %>%
+    color = ~salary_mean,size = I(9)) %>%
   layout(title = 'Work Location',
          font = list(color='white'),
          plot_bgcolor = '#191A1A', paper_bgcolor = '#191A1A',
