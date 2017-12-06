@@ -306,6 +306,17 @@ wordcloud2(jobs_words_requirement, size = 2,color = 'random-light',
            minRotation = -pi/3, maxRotation = pi/3,rotateRatio = 0.8)  
 ```
 
+# Base Salary VS Level Linear Regression 
+```{r}
+nyc_linear = nyc_jobs%>%
+  filter(level == 0|level ==1|level==2|level==3|level==4)
+linear_level = lm(salary_range_to ~ factor(level),data = nyc_linear)
+a = summary(linear_level)
+knitr::kable(a$coefficients)
+```
+
+The result of the linear regression between base salary and civil sevice title level is shown above. The model is Base Salary = 77347.446-12427{I = level 1}+3676{I = level 2} +10043{I = level 3}+18559{I = level 4}. Because p values are all less than 0.5, the linear regression is signifcant. Also, the slope of level is increasing with higher level.
+
 #Additional analysis:
 Linear regression analysis  
 
@@ -314,6 +325,6 @@ There are more job positions located at prosperous places and downtown. It makes
 We found that for base salary of jobs required for at least master degree, engineering has the highest median base salary, for base salary of jobs required for baccalaureate degree, technology has the highest median base salary, and for base salary without requirement of degree, the median base salary and the overall base salary of Engineering are all pretty high compared with other job categories.   
 From 2013 to 2017, the number of job positions in each category keeps increasing. And in 2017 all categories have a dramatically increase in job positions. This might because there are more positions needed in government during recent year.  Engineering positions has greatest increasing between 2016 to 2017,and job in health has great increasing between 2015 to 2016. We may predict that there will be great needed for talents in health and engineering area. While jobs in maintance has decrease between 2013 to 2014. Maybe this is because of the development of technology, fewer manpower is needed in maintance.  
 "Experience" is the top popular word in both preferred skills and requirements. It is important for people who want a job to get prepared. We may do some internship or related project to make us more competitive. Other top words in preferred skills are "written","project" and "team" . Employers always preferred candidates with strong skills especially written skills and team work.In requirements, "school" appears frequently. We may infer that education background is also important.  
-Linear 
+
 
 
