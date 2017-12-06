@@ -3,7 +3,7 @@ title: "Find a proper job in NYC -- Job analysis of NYC"
 output: 
   flexdashboard::flex_dashboard:
      source_code: embed
-  runtime: shiny
+runtime: shiny
 ---
 
 ```{r setup}
