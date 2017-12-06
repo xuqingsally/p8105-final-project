@@ -12,6 +12,8 @@ Zhuo Li (zl2637)
 Qing Xu (qx2178)  
 Zhaoyu Liu (zl2638)  
 
+The github link is:https://github.com/xuqingsally/p8105-final-project
+
 #Motivation: 
 Many of us will find a job in recent years. In New York City government area, what type of jobs can be payed for higher salary? If that's the ideal job for me , what skills should I have before applying for it?  Also where should I rent an apartment if I want to live close to that type of positions? By looking at the NYC jobs data set from 2013 to 2017,we wish to give some advice on job catrgories, required skills and salary range for people who are seeking for a job.  
 
