@@ -34,6 +34,7 @@ df<- read.csv("NYC_Jobs.csv") %>%
          preferred_skills!= " ",
          work_location!=" ") %>%
   head(2500) #google map limited to 2500
+
 df$job_category<- as.character(df$job_category)
 
 #combine job category
@@ -95,11 +96,12 @@ write.csv(df,file = "job.csv",row.names=FALSE)
 nyc_jobs=read_csv("job.csv")
 job_category = nyc_jobs %>% distinct(job_category) %>% pull()
 
-
+# Select job category
 selectInput("job_choice", label = h3("Select job category"),
             choices = job_category, selected = "Engineering")
 hr()
 
+# Select job salary range
 renderUI({
   max_sal = nyc_jobs %>% filter(job_category == input$job_choice) %>% distinct(salary_mean) %>% max()
   
@@ -108,16 +110,49 @@ renderUI({
   sliderInput("sal_range", label = h3("Choose Aunnal mean salary range"), min = min_sal, 
         max = max_sal, value = c(min, max))
 })
+
+#Select year
+year = nyc_jobs %>% distinct(year) %>% pull()
+
+radioButtons("year_choice", label = h3("Choose a year"),
+    choices = year, 
+    selected = "2013")
 ```
 
 
 Row
 -----------------------------------------------------------------------
 
-### Tmax against tmin
+### Job location map
 
 ```{r}
+renderPlotly({
+Sys.setenv('MAPBOX_TOKEN' = 'pk.eyJ1IjoieHVxaW5nc2FsbHkiLCJhIjoiY2phZWh0djdyMHUzZTJ3bGR3MHFsdmIzZSJ9.vhYtu7zeAAuX6slhdDj6lA')
 
+nyc_jobs = read_csv("job.csv") %>%  
+  separate(posting_date, into = c("year", "month", "day"), sep = "-") %>%
+  select(-month, -day) %>%
+  filter(job_category == input$job_choice,
+         
+         year == input$year_choice)
+
+plot_mapbox(nyc_jobs,lat = ~lat, lon = ~lon,
+              size=2,
+              split = nyc_jobs$job_category,
+              mode = 'scattermapbox') %>%
+  add_markers(
+    text = ~text_label,
+    color = ~job_category,size = I(9)) %>%
+  layout(title = 'Work Location',
+         font = list(color='white'),
+         plot_bgcolor = '#191A1A', paper_bgcolor = '#191A1A',
+         mapbox = list(style = 'dark'),
+         legend = list(orientation = 'h',
+                       font = list(size = 8)),
+         margin = list(l = 25, r = 25,
+                       b = 25, t = 25,
+                       pad = 2))
+})
 
 ```
 
