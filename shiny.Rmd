@@ -6,7 +6,7 @@ output:
   runtime: shiny
 ---
 
-```{r setup, include=FALSE}
+```{r setup}
 library(tidyverse)
 library(haven)
 library(readxl)
@@ -25,8 +25,9 @@ Column {.sidebar}
 -----------------------------------------------------------------------
 This `flexdashboard` with Shiny was made to provide information to help people find a job. The data come from [NYC Jobs](https://data.cityofnewyork.us/City-Government/NYC-Jobs/kpav-sd4t/data), which provides job information in New York from 2013 to 2017. 
 
-```{r}
-nyc_jobs<- read.csv("NYC_Jobs.csv") %>%
+```{r,eval=FALSE}
+#clean data
+df<- read.csv("NYC_Jobs.csv") %>%
   clean_names() %>%
   filter(job_category!= " ", 
          full_time_part_time_indicator!=" ", 
@@ -34,51 +35,68 @@ nyc_jobs<- read.csv("NYC_Jobs.csv") %>%
          work_location!=" ") %>%
   head(2500) #google map limited to 2500
 
-nyc_jobs$job_category<- as.character(nyc_jobs$job_category)
+df$job_category<- as.character(df$job_category)
 
-#combine job category (function?)
+#combine job category
 for (i in 1:2500) {
-    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("engineering", ignore_case = TRUE))] <- "Engineering"
-    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("finance", ignore_case = TRUE))] <- "Finance"
-    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("legal", ignore_case = TRUE))] <- "Legal Affairs"
-    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("technology", ignore_case = TRUE))] <- "Technology"
-    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("policy", ignore_case = TRUE))] <- "Policy"
-    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("communi", ignore_case = TRUE))] <- "Community"
-    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("clerical", ignore_case = TRUE))] <- "Clerical"
-    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("social service", ignore_case = TRUE))] <- "Social service"
-    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("public safety", ignore_case = TRUE))] <- "Public safety"
-    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("administration", ignore_case = TRUE))] <- "Administration"
-    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("operations", ignore_case = TRUE))] <- "Maintance"
-    nyc_jobs$job_category[[i]][str_detect(nyc_jobs$job_category[[i]],regex("maintenance ", ignore_case = TRUE))] <- "Maintance"
+    df$job_category[[i]][str_detect(df$job_category[[i]],regex("engineering", ignore_case = TRUE))] <- "Engineering"
+    df$job_category[[i]][str_detect(df$job_category[[i]],regex("finance", ignore_case = TRUE))] <- "Finance"
+    df$job_category[[i]][str_detect(df$job_category[[i]],regex("legal", ignore_case = TRUE))] <- "Legal Affairs"
+    df$job_category[[i]][str_detect(df$job_category[[i]],regex("technology", ignore_case = TRUE))] <- "Technology"
+    df$job_category[[i]][str_detect(df$job_category[[i]],regex("policy", ignore_case = TRUE))] <- "Policy"
+    df$job_category[[i]][str_detect(df$job_category[[i]],regex("communi", ignore_case = TRUE))] <- "Community"
+    df$job_category[[i]][str_detect(df$job_category[[i]],regex("clerical", ignore_case = TRUE))] <- "Clerical"
+    df$job_category[[i]][str_detect(df$job_category[[i]],regex("social service", ignore_case = TRUE))] <- "Social service"
+    df$job_category[[i]][str_detect(df$job_category[[i]],regex("public safety", ignore_case = TRUE))] <- "Public safety"
+    df$job_category[[i]][str_detect(df$job_category[[i]],regex("administration", ignore_case = TRUE))] <- "Administration"
+    df$job_category[[i]][str_detect(df$job_category[[i]],regex("operations", ignore_case = TRUE))] <- "Maintance"
+    df$job_category[[i]][str_detect(df$job_category[[i]],regex("maintenance ", ignore_case = TRUE))] <- "Maintance"
     
 }
 
 
 # change unit of salary and calculate mean
-nyc_jobs$salary_frequency<-as.character((nyc_jobs$salary_frequency))
-nyc_jobs$salary_range_from<- as.numeric(nyc_jobs$salary_range_from)
-nyc_jobs$salary_range_to<- as.numeric(nyc_jobs$salary_range_to)
+df$salary_frequency<-as.character((df$salary_frequency))
+df$salary_range_from<- as.numeric(df$salary_range_from)
+df$salary_range_to<- as.numeric(df$salary_range_to)
+df$salary_range_from <- with(df, ifelse(salary_frequency == "Hourly", salary_range_from*1825,salary_range_from))
+df$salary_range_to <- with(df, ifelse(salary_frequency == "Hourly", salary_range_to*1825,salary_range_to))
+df$salary_range_from <- with(df, ifelse(salary_frequency == "Daily", salary_range_from*365*5/7,salary_range_from))
+df$salary_range_to <- with(df, ifelse(salary_frequency == "Daily", salary_range_to*365*5/7,salary_range_to))
 
-#function?
-nyc_jobs$salary_range_from <- with(nyc_jobs, ifelse(salary_frequency == "Hourly", salary_range_from*1825,salary_range_from))
-nyc_jobs$salary_range_to <- with(nyc_jobs, ifelse(salary_frequency == "Hourly", salary_range_to*1825,salary_range_to))
-nyc_jobs$salary_range_from <- with(nyc_jobs, ifelse(salary_frequency == "Daily", salary_range_from*365*5/7,salary_range_from))
-nyc_jobs$salary_range_to <- with(nyc_jobs, ifelse(salary_frequency == "Daily", salary_range_to*365*5/7,salary_range_to))
+df<-mutate(df,salary_frequency="Annual") %>%
+          mutate(salary_mean = (salary_range_to-salary_range_from)/2+salary_range_from)
+df$salary_frequency<-as.character((df$salary_frequency))
+df$salary_range_from<- as.numeric(df$salary_range_from)
+df$salary_range_to<- as.numeric(df$salary_range_to)
+df$salary_range_from <- with(df, ifelse(salary_frequency == "Hourly", salary_range_from*1825,salary_range_from))
+df$salary_range_to <- with(df, ifelse(salary_frequency == "Hourly", salary_range_to*1825,salary_range_to))
+df$salary_range_from <- with(df, ifelse(salary_frequency == "Daily", salary_range_from*365*5/7,salary_range_from))
+df$salary_range_to <- with(df, ifelse(salary_frequency == "Daily", salary_range_to*365*5/7,salary_range_to))
 
-nyc_jobs<-mutate(nyc_jobs,salary_frequency="Annual") %>%
+df<-mutate(df,salary_frequency="Annual") %>%
           mutate(salary_mean = (salary_range_to-salary_range_from)/2+salary_range_from)
 
 
 # get longtitude and latitude
-nyc_jobs$work_location<-as.character(nyc_jobs$work_location)
-geo <- geocode(location = nyc_jobs$work_location, output="latlon", source="google")
-nyc_jobs<- nyc_jobs %>%
+df$work_location<-as.character(df$work_location)
+geo <- geocode(location = df$work_location, output="latlon", source="google")
+df<- df %>%
   mutate(lon = geo$lon, lat = geo$lat) %>%
   group_by(job_category)
+
+df <- df %>%
+  mutate(text_label = str_c("Annual mean salary$:",salary_mean))
+# write a new data set and use it in the following analysize
+write.csv(df,file = "job.csv",row.names=FALSE)
 
 ```
 
 ```{r}
+nyc_jobs=read_csv("job.csv") %>%
+  separate(posting_date, into = c("year", "month", "day"), sep = "-") %>%
+  select(-month, -day) %>%
+  mutate(year = as.numeric(year))
 job_category = nyc_jobs %>% distinct(job_category) %>% pull()
 
 # Select job category
@@ -87,17 +105,17 @@ selectInput("job_choice", label = h3("Select job category"),
 hr()
 
 # Select job salary range
-renderUI({
-  max_sal = nyc_jobs %>% filter(job_category == input$job_choice) %>% distinct(salary_mean) %>% max()
+
+max_sal = nyc_jobs %>% distinct(salary_mean) %>% max()
+min_sal = nyc_jobs %>% distinct(salary_mean) %>% min()
   
-  min_sal = nyc_jobs %>% filter(job_category == input$job_choice) %>% distinct(salary_mean) %>% min()
-  
-  sliderInput("sal_range", label = h3("Choose Aunnal mean salary range"), min = min_sal, 
-        max = max_sal, value = c(min, max))
-})
+sliderInput("sal_range", label = h3("Choose Aunnal mean salary range"), min = min_sal, 
+        max = max_sal, value = c(35314.00, 105000.00))
+
 
 #Select year
-year = nyc_jobs %>% distinct(year) %>% pull()
+year = c(2013, 2014, 2015, 2016, 2017)
+  #nyc_jobs %>% distinct(year) %>% pull()
 
 radioButtons("year_choice", label = h3("Choose a year"),
     choices = year, 
@@ -115,8 +133,6 @@ renderPlotly({
 Sys.setenv('MAPBOX_TOKEN' = 'pk.eyJ1IjoieHVxaW5nc2FsbHkiLCJhIjoiY2phZWh0djdyMHUzZTJ3bGR3MHFsdmIzZSJ9.vhYtu7zeAAuX6slhdDj6lA')
 
 nyc_jobs = read_csv("job.csv") %>%  
-  separate(posting_date, into = c("year", "month", "day"), sep = "-") %>%
-  select(-month, -day) %>%
   filter(job_category == input$job_choice,
          salary_mean %in% input$sal_range[1]:input$sal_range[2],
          year == input$year_choice)
@@ -144,17 +160,41 @@ plot_mapbox(nyc_jobs,lat = ~lat, lon = ~lon,
 Row {.tabset .tabset-fade}
 -----------------------------------------------------------------------
 
-### Word count in different job categories
+### Word count in preferred skills
+
 ```{r}
+renderPlotly({
+  ski<- nyc_jobs %>%
+     mutate(preferred_skills = as.character(preferred_skills)) %>%  
+     filter(job_category == input$job_choice,
+     salary_mean %in% input$sal_range[1]:input$sal_range[2]) 
+jobs_words_skill = ski%>%
+  unnest_tokens(word,preferred_skills)%>%
+  anti_join(stop_words)%>%
+  inner_join(., parts_of_speech) %>%
+  count(word, sort = TRUE) %>%
+  top_n(10) %>% 
+  mutate(word = fct_reorder(word, n)) %>% 
+  plot_ly(y = ~word, x = ~n, color = ~word, type = "bar")%>%
+  layout(title = "Preferred Skills Word Counts")
+})
 
 ```
 
 
-
-### Snowfall Distribution of each year
+##Number of position in different job category
 
 ```{r}
-
+renderPlotly({ 
+  job_positions = nyc_jobs %>%
+  group_by(job_category) %>%
+  summarise(positions = sum(x_of_positions))%>%
+  filter(year == input$year_choice,
+         salary_mean %in% input$sal_range[1]:input$sal_range[2])
+  
+  plot_ly(job_positions, x = ~job_category, y = ~positions,
+        type = "bar") %>%
+  layout(title = "Number of positions of job categories in each year")
+})
 ```
-
 
