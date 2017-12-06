@@ -1,0 +1,212 @@
+---
+title: "Job information dashboard"
+output: 
+  flexdashboard::flex_dashboard:
+    storyboard: true
+    social: menu
+    source: embed
+---
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(tidyverse)
+library(haven)
+library(readxl)
+library(janitor)
+library(ggmap)
+library(plotly)
+library(stringr)
+library(wordcloud2)
+library(tidytext)
+library(forcats)
+library(viridis)
+library(ggplot2)
+```
+### Location map
+
+```{r}
+nyc_jobs=read_csv("job.csv")
+Sys.setenv('MAPBOX_TOKEN' = 'pk.eyJ1IjoieHVxaW5nc2FsbHkiLCJhIjoiY2phZWh0djdyMHUzZTJ3bGR3MHFsdmIzZSJ9.vhYtu7zeAAuX6slhdDj6lA')
+plot_mapbox(nyc_jobs,lat = ~lat, lon = ~lon,
+              size=2,
+              split = nyc_jobs$job_category,
+              mode = 'scattermapbox') %>%
+  add_markers(
+    text = ~text_label,
+    color = ~job_category,size = I(9)) %>%
+  layout(title = 'Work Location',
+         font = list(color='white'),
+         plot_bgcolor = '#191A1A', paper_bgcolor = '#191A1A',
+         mapbox = list(style = 'dark'),
+         legend = list(orientation = 'h',
+                       font = list(size = 8)),
+         margin = list(l = 25, r = 25,
+                       b = 25, t = 25,
+                       pad = 2))
+
+```
+
+***
+-From the map, we found that most of jobs located in New York but also there are some jobs located all over the world. In New York, most jobs located in the lower Manhattan and Brooklyn Heights where are prosperous places. Zoom in the map to see details of the distribution of jobs. 
+
+### Distribution of salary in different job category
+
+```{r}
+v<- ggplot(nyc_jobs,aes(x = job_category, y = salary_mean))+
+     geom_violin(aes(fill = job_category), alpha = .5)+
+     labs(title = "Annual average salary distribution in 12 job categories")+
+     theme(axis.text.x = element_text(angle = 90, hjust = 1))
+ggplotly(v)
+```
+***
+-From the violin plot, we found that "Technology" and "Engineering" jobs have higher average salary and "Clerical" jobs has lower average salary among the 12 job categories. It makes sense that the first two job categories need professional skills and knowledge while those skills are unnecessary for clerical work. Also there exists some outliers in several categories. If you really did well in your position, it doesn't matter what's your job category. It is important that you do the work that interests you, but at the same time, have a job in technology and engineering may be more well-paid.  
+
+
+### Boxplots of Base salary master degree
+
+```{r}
+# Job category with different educational requirement and base salary
+job_data = nyc_jobs %>%
+  select(job_category, salary_range_from, salary_range_to,
+         minimum_qual_requirements, full_time_part_time_indicator,
+         salary_frequency) %>%
+  filter(job_category!= " ", minimum_qual_requirements!=" ",
+         full_time_part_time_indicator == "F", salary_frequency == "Annual")
+
+#select the different data according to the matching key words and avoid repetition
+x = c("baccalaureate", "Bachelor")
+y = c("Master", "master")
+
+master_data = filter(job_data, grepl(paste(y, collapse = "|"), minimum_qual_requirements),
+                     !grepl(paste(x, collapse = "|"), minimum_qual_requirements))
+  
+
+baccalaureate_data = filter(job_data, grepl(paste(x, collapse = "|"), minimum_qual_requirements),
+                            !grepl(paste(y, collapse = "|"), minimum_qual_requirements))
+
+Other_data = filter(job_data, !grepl(paste(y, collapse = "|"), minimum_qual_requirements),
+                    !grepl(paste(x, collapse = "|"), minimum_qual_requirements))
+
+plot_ly(master_data, y = ~salary_range_from, color = ~job_category, type = "box", colors = "Set2") %>%
+layout(title = "Base salary of jobs required at least master degree")
+
+```
+
+***
+Need more
+
+### Boxplots of Base salary for baccalaureate degree
+
+```{r}
+plot_ly(baccalaureate_data, y = ~salary_range_from, color = ~job_category, type = "box", colors = "Set2") %>%
+  layout(title = "Base salary of jobs required baccalaureate degree(No need master)")
+```
+
+***
+Need more
+
+###Boxplots of Base salary without degree
+```{r}
+plot_ly(Other_data, y = ~salary_range_from, color = ~job_category, type = "box",
+          colors = "Set2") %>%
+  layout(title = "Base salary of different kind of jobs without requirement of degree")
+
+```
+
+***
+Need more.
+
+###The wage increasing ranges of different jobs
+```{r}
+job_data = mutate(job_data, salary_range = salary_range_to - salary_range_from)
+
+plot_ly(job_data, y = ~salary_range, x = ~job_category, type = "bar") %>%
+  layout(title = "The wage increasing ranges of different kinds of jobs")
+```
+
+***
+From the plot, we can see that the job category of Legal Affairs has the largest wage increasing range and the job category of Clerical has the smallest wage increasing range compared with other different job categories.
+
+
+### Bar plot of job category vs. number of positions of each year.
+
+```{r}
+positions_plot = nyc_jobs %>%
+  select(x_of_positions, agency, job_category, salary_mean, posting_date) %>%
+  distinct() %>%
+  separate(posting_date, into = c("year", "month", "day"), sep = "-") %>%
+  select(-month, -day) %>%
+  group_by(job_category, year) %>%
+  summarise(positions = sum(x_of_positions))
+
+# Make a bar plot of job category vs. number of positions of each year
+plot_ly(positions_plot, x = ~job_category, y = ~positions,
+        color = ~year, type = "bar") %>%
+  layout(title = "Number of positions of job categories in each year",
+         barmode = "group")
+```
+
+***
+The bar chart above shows the number of positions for each job category in each year. From 2013 to 2017, the number of job positions in each category keeps increasing. And all categories have a dramatically increase in job positions in 2017. This might because more and more companies were founded and developed in 2017, thus they need more employees joining in. Besides, since this dataset contains all job information from NYC official job website, as the year increases, more people found this website and created job postings on this site.
+
+### Wordcount analysis of Preffered Skills
+
+```{r}
+#change class of the variables
+nyc_jobs = nyc_jobs%>% 
+  ungroup()%>%
+  mutate(minimum_qual_requirements = as.character(minimum_qual_requirements))%>%
+  mutate(preferred_skills = as.character(preferred_skills))
+
+#seperate into words and count the word
+jobs_words_skill =  nyc_jobs%>%
+  unnest_tokens(word,preferred_skills)%>%
+  anti_join(stop_words)%>%
+  inner_join(., parts_of_speech) %>%
+  count(word, sort = TRUE)
+jobs_words_requirement =  nyc_jobs%>%
+  unnest_tokens(word,minimum_qual_requirements)%>%
+  anti_join(stop_words)%>%
+  inner_join(., parts_of_speech) %>%
+  count(word, sort = TRUE)
+
+#rank the word counts
+jobs_words_skill %>% 
+  top_n(20) %>% 
+  mutate(word = fct_reorder(word, n)) %>% 
+  plot_ly(y = ~word, x = ~n, color = ~word, type = "bar")%>%
+  layout(title = "Preferred Skills Word Counts")
+```
+
+***
+After deleting meaningless words, experience is the most used word in prefeered skills. We could see that word and excel is still the most common skill needed, and other skills for communication like written, verbal public speaking and oral is also like basic skills needed. 
+
+### Wordcount analysis of Minimum Qual Requirements
+```{r}
+jobs_words_requirement %>% 
+  top_n(20) %>% 
+  mutate(word = fct_reorder(word, n)) %>% 
+  plot_ly(y = ~word, x = ~n, color = ~word, type = "bar")%>%
+  layout(title = "Minimum Qual Requirements")
+```
+
+***
+For miminum qual requirements, education is really important, for that there are several words related to education shown on the plot such like "school", "college", "degree", "education", "graduate". Those words indicates a high requirement of education like bacherlor or master degree. And the word york indicates the requirement of residency in New York.
+
+### Word Cloud of Preffered Skills
+```{r}
+set.seed(123)
+wordcloud2(jobs_words_skill, size = 2,color = 'random-light',  
+           backgroundColor = "gray", fontWeight='bold',  
+           minRotation = -pi/3, maxRotation = pi/3,rotateRatio = 0.8)  
+```
+***
+
+### Word Cloud of Minimum Qual Requirements
+```{r}
+set.seed(123)
+wordcloud2(jobs_words_requirement, size = 2,color = 'random-light',  
+           backgroundColor = "gray", fontWeight='bold',  
+           minRotation = -pi/3, maxRotation = pi/3,rotateRatio = 0.8)  
+```
+
+***
