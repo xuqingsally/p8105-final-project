@@ -177,7 +177,7 @@ job_data = nyc_jobs %>%
   filter(job_category!= " ", minimum_qual_requirements!=" ",
          full_time_part_time_indicator == "F", salary_frequency == "Annual")
 
-
+#select the different data according to the matching key words and avoid repetition
 x = c("baccalaureate", "Bachelor")
 y = c("Master", "master")
 
