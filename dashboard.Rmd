@@ -2,7 +2,6 @@
 title: "Job information dashboard"
 output: 
   flexdashboard::flex_dashboard:
-    storyboard: true
     social: menu
     source: embed
 ---
@@ -21,7 +20,10 @@ library(forcats)
 library(viridis)
 library(ggplot2)
 ```
-### Location map
+
+Location and position {.storyboard}
+=========================================
+### Location Map
 
 ```{r}
 nyc_jobs=read_csv("job.csv")
@@ -46,9 +48,32 @@ plot_mapbox(nyc_jobs,lat = ~lat, lon = ~lon,
 ```
 
 ***
--From the map, we found that most of jobs located in New York but also there are some jobs located all over the world. In New York, most jobs located in the lower Manhattan and Brooklyn Heights where are prosperous places. Zoom in the map to see details of the distribution of jobs. 
+From the map, we found that most of jobs located in New York but also there are some jobs located all over the world. In New York, most jobs located in the lower Manhattan and Brooklyn Heights where are prosperous places. Zoom in the map to see details of the distribution of jobs. 
 
-### Distribution of salary in different job category
+### Bar plot of job category vs. number of positions of each year
+
+```{r}
+positions_plot = nyc_jobs %>%
+  select(x_of_positions, agency, job_category, salary_mean, posting_date) %>%
+  distinct() %>%
+  separate(posting_date, into = c("year", "month", "day"), sep = "-") %>%
+  select(-month, -day) %>%
+  group_by(job_category, year) %>%
+  summarise(positions = sum(x_of_positions))
+
+# Make a bar plot of job category vs. number of positions of each year
+plot_ly(positions_plot, x = ~job_category, y = ~positions,
+        color = ~year, type = "bar") %>%
+  layout(title = "Number of positions of job categories in each year",
+         barmode = "group")
+```
+
+***
+The bar chart above shows the number of positions for each job category in each year. From 2013 to 2017, the number of job positions in each category keeps increasing. And all categories have a dramatically increase in job positions in 2017. This might because more and more companies were founded and developed in 2017, thus they need more employees joining in. Besides, since this dataset contains all job information from NYC official job website, as the year increases, more people found this website and created job postings on this site.
+
+Salary of different jobs {.storyboard}
+=========================================
+### Distribution of salary in different job categories
 
 ```{r}
 v<- ggplot(nyc_jobs,aes(x = job_category, y = salary_mean))+
@@ -57,12 +82,11 @@ v<- ggplot(nyc_jobs,aes(x = job_category, y = salary_mean))+
      theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ggplotly(v)
 ```
+
 ***
--From the violin plot, we found that "Technology" and "Engineering" jobs have higher average salary and "Clerical" jobs has lower average salary among the 12 job categories. It makes sense that the first two job categories need professional skills and knowledge while those skills are unnecessary for clerical work. Also there exists some outliers in several categories. If you really did well in your position, it doesn't matter what's your job category. It is important that you do the work that interests you, but at the same time, have a job in technology and engineering may be more well-paid.  
+From the violin plot, we found that "Technology" and "Engineering" jobs have higher average salary and "Clerical" jobs has lower average salary among the 12 job categories. It makes sense that the first two job categories need professional skills and knowledge while those skills are unnecessary for clerical work. Also there exists some outliers in several categories. If you really did well in your position, it doesn't matter what's your job category. It is important that you do the work that interests you, but at the same time, have a job in technology and engineering may be more well-paid.  
 
-
-### Boxplots of Base salary master degree
-
+###The wage increasing ranges of different jobs
 ```{r}
 # Job category with different educational requirement and base salary
 job_data = nyc_jobs %>%
@@ -86,13 +110,25 @@ baccalaureate_data = filter(job_data, grepl(paste(x, collapse = "|"), minimum_qu
 Other_data = filter(job_data, !grepl(paste(y, collapse = "|"), minimum_qual_requirements),
                     !grepl(paste(x, collapse = "|"), minimum_qual_requirements))
 
+job_data = mutate(job_data, salary_range = salary_range_to - salary_range_from)
+
+plot_ly(job_data, y = ~salary_range, x = ~job_category, type = "bar") %>%
+  layout(title = "The wage increasing ranges of different kinds of jobs")
+```
+
+***
+From the plot, we can see that the job category of Legal Affairs has the largest wage increasing range and the job category of Clerical has the smallest wage increasing range compared with other different job categories.
+
+ Salary of educational requirement{.storyboard}
+=========================================
+### Boxplots of Base salary for master degree
+
+```{r}
+
 plot_ly(master_data, y = ~salary_range_from, color = ~job_category, type = "box", colors = "Set2") %>%
 layout(title = "Base salary of jobs required at least master degree")
 
 ```
-
-***
-Need more
 
 ### Boxplots of Base salary for baccalaureate degree
 
@@ -100,9 +136,6 @@ Need more
 plot_ly(baccalaureate_data, y = ~salary_range_from, color = ~job_category, type = "box", colors = "Set2") %>%
   layout(title = "Base salary of jobs required baccalaureate degree(No need master)")
 ```
-
-***
-Need more
 
 ###Boxplots of Base salary without degree
 ```{r}
@@ -113,41 +146,14 @@ plot_ly(Other_data, y = ~salary_range_from, color = ~job_category, type = "box",
 ```
 
 ***
-Need more.
+For those three plots, we see that in the boxplot of base salary of jobs required for at least master degree, engineering has the highest median base salary and the overall base salary of Legal Affairs are pretty high compared with other job category. While in the boxplot of base salary of jobs required for baccalaureate degree, technology has the highest median base salary, and the overall salary of Administration is pretty high compared with others. In the boxplot of base salary without requirement of degree, the median base salary and the overall base salary of Engineering are all pretty high compared with other job categories.
 
-###The wage increasing ranges of different jobs
-```{r}
-job_data = mutate(job_data, salary_range = salary_range_to - salary_range_from)
-
-plot_ly(job_data, y = ~salary_range, x = ~job_category, type = "bar") %>%
-  layout(title = "The wage increasing ranges of different kinds of jobs")
-```
-
-***
-From the plot, we can see that the job category of Legal Affairs has the largest wage increasing range and the job category of Clerical has the smallest wage increasing range compared with other different job categories.
+Comparing those three plots, we can see the overall base salary of jobs required for at least master degree are higher than the overall base salary of jobs required for baccalaureate. The distribution of the base salary of jobs without degrees' requirement is not centralized and the base salaries mainly depend on the job positon in this case.
 
 
-### Bar plot of job category vs. number of positions of each year.
 
-```{r}
-positions_plot = nyc_jobs %>%
-  select(x_of_positions, agency, job_category, salary_mean, posting_date) %>%
-  distinct() %>%
-  separate(posting_date, into = c("year", "month", "day"), sep = "-") %>%
-  select(-month, -day) %>%
-  group_by(job_category, year) %>%
-  summarise(positions = sum(x_of_positions))
-
-# Make a bar plot of job category vs. number of positions of each year
-plot_ly(positions_plot, x = ~job_category, y = ~positions,
-        color = ~year, type = "bar") %>%
-  layout(title = "Number of positions of job categories in each year",
-         barmode = "group")
-```
-
-***
-The bar chart above shows the number of positions for each job category in each year. From 2013 to 2017, the number of job positions in each category keeps increasing. And all categories have a dramatically increase in job positions in 2017. This might because more and more companies were founded and developed in 2017, thus they need more employees joining in. Besides, since this dataset contains all job information from NYC official job website, as the year increases, more people found this website and created job postings on this site.
-
+ Word count{.storyboard}
+=========================================
 ### Wordcount analysis of Preffered Skills
 
 ```{r}
@@ -199,7 +205,6 @@ wordcloud2(jobs_words_skill, size = 2,color = 'random-light',
            backgroundColor = "gray", fontWeight='bold',  
            minRotation = -pi/3, maxRotation = pi/3,rotateRatio = 0.8)  
 ```
-***
 
 ### Word Cloud of Minimum Qual Requirements
 ```{r}
@@ -208,5 +213,3 @@ wordcloud2(jobs_words_requirement, size = 2,color = 'random-light',
            backgroundColor = "gray", fontWeight='bold',  
            minRotation = -pi/3, maxRotation = pi/3,rotateRatio = 0.8)  
 ```
-
-***
