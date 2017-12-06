@@ -28,6 +28,7 @@ After analysizing job information among the data set,we will consider linearity 
   
 #Data: 
 Source: https://data.cityofnewyork.us/City-Government/NYC-Jobs/kpav-sd4t/data  
+Data: The data set is the job information posted from NewYork from 2013 to 2017 which includes title,employers, salary, work location and so on.  
 Scrape:We downloaded the data set from the website and the original data set contains 3174 job information. We selected data with information about work location, job category, preferred skills and full/part time. We want to use Google Map to get longtitute and latitute from work locations. Since the Google map has a limit of 2500 observation one time, we selected first 2500 observations from the data set.  
 Cleaning:  
 1. Merge job category if they are the same kind but just have different names. Finally we got 12 kinds of job categories.    
@@ -193,6 +194,7 @@ Other_data = filter(job_data, !grepl(paste(y, collapse = "|"), minimum_qual_requ
 ```
 
 ## Boxplots of salary for different educational requirement.
+
 ```{r}
 plot_ly(master_data, y = ~salary_range_from, color = ~job_category, type = "box", colors = "Set2") %>%
 
@@ -262,11 +264,13 @@ The bar chart above shows the number of positions for each job category in each 
 ## Wordcount analysis of Preffered Skills and Minimum Qual Requirements
 
 ```{r}
+#change class of the variables
 nyc_jobs = nyc_jobs%>% 
   ungroup()%>%
-  mutate(  minimum_qual_requirements = as.character(minimum_qual_requirements))%>%
+  mutate(minimum_qual_requirements = as.character(minimum_qual_requirements))%>%
   mutate(preferred_skills = as.character(preferred_skills))
 
+#seperate into words and count the word
 jobs_words_skill =  nyc_jobs%>%
   unnest_tokens(word,preferred_skills)%>%
   anti_join(stop_words)%>%
@@ -278,6 +282,7 @@ jobs_words_requirement =  nyc_jobs%>%
   inner_join(., parts_of_speech) %>%
   count(word, sort = TRUE)
 
+#rank the word counts
 jobs_words_skill %>% 
   top_n(20) %>% 
   mutate(word = fct_reorder(word, n)) %>% 
@@ -297,6 +302,7 @@ For miminum qual requirements, education is really important, for that there are
 The word clouds of skills and minimum requirement are shown below, which indicates a more straight view of word frequency.
 
 ## Word Cloud of Preffered Skills and Minimum Qual Requirements
+The word count can be showed as two word clouds.  
 ```{r}
 set.seed(123)
 wordcloud2(jobs_words_skill, size = 2,color = 'random-light',  
@@ -307,7 +313,10 @@ wordcloud2(jobs_words_requirement, size = 2,color = 'random-light',
            minRotation = -pi/3, maxRotation = pi/3,rotateRatio = 0.8)  
 ```
 
-# Base Salary VS Level Linear Regression 
+#Linear regression analysis:
+
+## Base Salary VS Level Linear Regression 
+We select position level from 0 to 4 and want to find whether there is linear association between level with base salary.    
 ```{r}
 nyc_linear = nyc_jobs%>%
   filter(level == 0|level ==1|level==2|level==3|level==4)
@@ -317,15 +326,13 @@ knitr::kable(a$coefficients)
 ```
 
 The result of the linear regression between base salary and civil sevice title level is shown above. The model is Base Salary = 77347.446-12427{I = level 1}+3676{I = level 2} +10043{I = level 3}+18559{I = level 4}. Because p values are all less than 0.5, the linear regression is signifcant. Also, the slope of level is increasing with higher level.
-
-#Additional analysis:
-Linear regression analysis  
+ 
 
 #Discussion: 
 There are more job positions located at prosperous places and downtown. It makes sense that companies and departments always located in downtown.  
 We found that for base salary of jobs required for at least master degree, engineering has the highest median base salary, for base salary of jobs required for baccalaureate degree, technology has the highest median base salary, and for base salary without requirement of degree, the median base salary and the overall base salary of Engineering are all pretty high compared with other job categories.   
 From 2013 to 2017, the number of job positions in each category keeps increasing. And in 2017 all categories have a dramatically increase in job positions. This might because there are more positions needed in government during recent year.  Engineering positions has greatest increasing between 2016 to 2017,and job in health has great increasing between 2015 to 2016. We may predict that there will be great needed for talents in health and engineering area. While jobs in maintance has decrease between 2013 to 2014. Maybe this is because of the development of technology, fewer manpower is needed in maintance.  
 "Experience" is the top popular word in both preferred skills and requirements. It is important for people who want a job to get prepared. We may do some internship or related project to make us more competitive. Other top words in preferred skills are "written","project" and "team" . Employers always preferred candidates with strong skills especially written skills and team work.In requirements, "school" appears frequently. We may infer that education background is also important.  
-
+Also, there exsists a linear regression between base salary and civil sevice title level, higher salary could be gained with higher level started.
 
 
