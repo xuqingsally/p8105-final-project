@@ -261,11 +261,13 @@ The bar chart above shows the number of positions for each job category in each 
 ## Wordcount analysis of Preffered Skills and Minimum Qual Requirements
 
 ```{r}
+#change class of the variables
 nyc_jobs = nyc_jobs%>% 
   ungroup()%>%
-  mutate(  minimum_qual_requirements = as.character(minimum_qual_requirements))%>%
+  mutate(minimum_qual_requirements = as.character(minimum_qual_requirements))%>%
   mutate(preferred_skills = as.character(preferred_skills))
 
+#seperate into words and count the word
 jobs_words_skill =  nyc_jobs%>%
   unnest_tokens(word,preferred_skills)%>%
   anti_join(stop_words)%>%
@@ -277,6 +279,7 @@ jobs_words_requirement =  nyc_jobs%>%
   inner_join(., parts_of_speech) %>%
   count(word, sort = TRUE)
 
+#rank the word counts
 jobs_words_skill %>% 
   top_n(20) %>% 
   mutate(word = fct_reorder(word, n)) %>% 
