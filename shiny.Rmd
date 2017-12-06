@@ -167,7 +167,8 @@ renderPlotly({
   ski<- nyc_jobs %>%
      mutate(preferred_skills = as.character(preferred_skills)) %>%  
      filter(job_category == input$job_choice,
-     salary_mean %in% input$sal_range[1]:input$sal_range[2]) 
+     salary_mean %in% input$sal_range[1]:input$sal_range[2],
+     year == input$year_choice) 
 jobs_words_skill = ski%>%
   unnest_tokens(word,preferred_skills)%>%
   anti_join(stop_words)%>%
@@ -182,13 +183,13 @@ jobs_words_skill = ski%>%
 ```
 
 
-##Number of position in different job category
+### Number of position in different job category
 
 ```{r}
 renderPlotly({ 
   job_positions = nyc_jobs %>%
   select(x_of_positions, agency, job_category, salary_mean)%>%
-  group_by(job_category,salary_mean) %>%
+  group_by(job_category, salary_mean) %>%
   summarise(positions = sum(x_of_positions))%>%
   filter(year == input$year_choice,
          salary_mean %in% input$sal_range[1]:input$sal_range[2])
