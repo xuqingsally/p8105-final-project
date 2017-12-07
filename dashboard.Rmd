@@ -48,7 +48,7 @@ plot_mapbox(nyc_jobs,lat = ~lat, lon = ~lon,
 ```
 
 ***
-From the map, we found that most of jobs located in New York but also there are some jobs located all over the world. In New York, most jobs located in the lower Manhattan and Brooklyn Heights where are prosperous places. Zoom in the map to see details of the distribution of jobs. 
+From the map, we found that most of the jobs located in New York but also there are some jobs located all over the world. In New York, most jobs located in the lower Manhattan and Brooklyn Heights where are prosperous places. Zoom in the map to view details of the distribution of jobs.  
 
 ### Bar plot of job category vs. number of positions of each year
 
@@ -69,7 +69,7 @@ plot_ly(positions_plot, x = ~job_category, y = ~positions,
 ```
 
 ***
-The bar chart above shows the number of positions for each job category in each year. From 2013 to 2017, the number of job positions in each category keeps increasing. And all categories have a dramatically increase in job positions in 2017. This might because more and more companies were founded and developed in 2017, thus they need more employees joining in. Besides, since this dataset contains all job information from NYC official job website, as the year increases, more people found this website and created job postings on this site.
+The bar chart above shows the number of positions in each job category in each year. From 2013 to 2017, the number of job positions in each category keeps increasing. And all categories have a dramatic increase in job positions in 2017. This might be because more and more companies were founded and developed in 2017, thus they need more employees joining in. Besides, since this dataset contains all job information from NYC job website, as the year increases, more people found this website and created job postings on this site.
 
 Salary of different jobs {.storyboard}
 =========================================
@@ -146,7 +146,7 @@ plot_ly(Other_data, y = ~salary_range_from, color = ~job_category, type = "box",
 ```
 
 ***
-For those three plots, we see that in the boxplot of base salary of jobs required for at least master degree, engineering has the highest median base salary and the overall base salary of Legal Affairs are pretty high compared with other job category. While in the boxplot of base salary of jobs required for baccalaureate degree, technology has the highest median base salary, and the overall salary of Administration is pretty high compared with others. In the boxplot of base salary without requirement of degree, the median base salary and the overall base salary of Engineering are all pretty high compared with other job categories.
+For those three plots, we see that in the box plot of base salary of jobs required for at least master degree, engineering has the highest median base salary and the overall base salary of Legal Affairs are pretty high compared with other job category. While in the box plot of base salary of jobs required for the baccalaureate degree, technology has the highest median base salary, and the overall salary of Administration is pretty high compared with others. In the box plot of base salary without requirement of degree, the median base salary and the overall base salary of Engineering are all pretty high compared with other job categories.
 
 Comparing those three plots, we can see the overall base salary of jobs required for at least master degree are higher than the overall base salary of jobs required for baccalaureate. The distribution of the base salary of jobs without degrees' requirement is not centralized and the base salaries mainly depend on the job positon in this case.
 
@@ -154,7 +154,7 @@ Comparing those three plots, we can see the overall base salary of jobs required
 
  Word count{.storyboard}
 =========================================
-### Wordcount analysis of Preffered Skills
+### Wordcount analysis of Preferred Skills
 
 ```{r}
 #change class of the variables
@@ -184,7 +184,7 @@ jobs_words_skill %>%
 ```
 
 ***
-After deleting meaningless words, experience is the most used word in prefeered skills. We could see that word and excel is still the most common skill needed, and other skills for communication like written, verbal public speaking and oral is also like basic skills needed. 
+After deleting meaningless words, experience is the most used word in preferred skills. We could see that word and excel is still the most common skill needed, and other skills for communication like written, verbal public speaking and oral is also like basic skills needed. 
 
 ### Wordcount analysis of Minimum Qual Requirements
 ```{r}
@@ -196,15 +196,18 @@ jobs_words_requirement %>%
 ```
 
 ***
-For miminum qual requirements, education is really important, for that there are several words related to education shown on the plot such like "school", "college", "degree", "education", "graduate". Those words indicates a high requirement of education like bacherlor or master degree. And the word york indicates the requirement of residency in New York.
+For minimum qual requirements, education is really important, for that there are several words related to education shown on the plot such like "school", "college", "degree", "education", "graduate". Those words indicate a high requirement of education like bachelor or master degree. And the word york indicates the requirement of residency in New York.
 
-### Word Cloud of Preffered Skills
+### Word Cloud of Preferred Skills
 ```{r}
 set.seed(123)
 wordcloud2(jobs_words_skill, size = 2,color = 'random-light',  
            backgroundColor = "gray", fontWeight='bold',  
            minRotation = -pi/3, maxRotation = pi/3,rotateRatio = 0.8)  
 ```
+
+***
+It may takes about ten minutes to show the word cloud.
 
 ### Word Cloud of Minimum Qual Requirements
 ```{r}
@@ -213,3 +216,6 @@ wordcloud2(jobs_words_requirement, size = 2,color = 'random-light',
            backgroundColor = "gray", fontWeight='bold',  
            minRotation = -pi/3, maxRotation = pi/3,rotateRatio = 0.8)  
 ```
+
+***
+It may takes about ten minutes to show the word cloud.
