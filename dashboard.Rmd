@@ -184,7 +184,7 @@ jobs_words_skill %>%
 ```
 
 ***
-After deleting meaningless words, experience is the most used word in preferred skills. We could see that word and excel is still the most common skill needed, and other skills for communication like written, verbal public speaking and oral is also like basic skills needed. 
+After deleting meaningless words, experience is the most used word in preferred skills. We could see that word and excel is still the most common skill needed, and other skills for communication like written, verbal public speaking and oral is also like basic skills needed. The wordcloud plot of preferred skills is shown in Appendix, for that it could not be shown in flexdashboard.
 
 ### Wordcount analysis of Minimum Qual Requirements
 ```{r}
@@ -196,26 +196,6 @@ jobs_words_requirement %>%
 ```
 
 ***
-For minimum qual requirements, education is really important, for that there are several words related to education shown on the plot such like "school", "college", "degree", "education", "graduate". Those words indicate a high requirement of education like bachelor or master degree. And the word york indicates the requirement of residency in New York.
+For minimum qual requirements, education is really important, for that there are several words related to education shown on the plot such like "school", "college", "degree", "education", "graduate". Those words indicate a high requirement of education like bachelor or master degree. And the word york indicates the requirement of residency in New York. The wordcloud plot of minimum qual requirement is shown in Appendix, for that it could not be shown in flexdashboard.
 
-### Word Cloud of Preferred Skills
-```{r}
-set.seed(123)
-wordcloud2(jobs_words_skill, size = 2,color = 'random-light',  
-           backgroundColor = "gray", fontWeight='bold',  
-           minRotation = -pi/3, maxRotation = pi/3,rotateRatio = 0.8)  
-```
-
-***
-It may takes about ten minutes to show the word cloud.
-
-### Word Cloud of Minimum Qual Requirements
-```{r}
-set.seed(123)
-wordcloud2(jobs_words_requirement, size = 2,color = 'random-light',  
-           backgroundColor = "gray", fontWeight='bold',  
-           minRotation = -pi/3, maxRotation = pi/3,rotateRatio = 0.8)  
-```
-
-***
-It may takes about ten minutes to show the word cloud.
+ 
